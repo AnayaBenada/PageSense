@@ -1,0 +1,47 @@
+[
+  {
+    "tokens": 2000,
+    "chunks": 11,
+    "index_ms": 124.3,
+    "retrieve_p50_ms": 263.17,
+    "retrieve_p95_ms": 275.71,
+    "retrieve_max_ms": 288.36,
+    "first_question_ms": 387.4
+  },
+  {
+    "tokens": 5000,
+    "chunks": 28,
+    "index_ms": 286.8,
+    "retrieve_p50_ms": 513.71,
+    "retrieve_p95_ms": 557.2,
+    "retrieve_max_ms": 591.01,
+    "first_question_ms": 800.5
+  },
+  {
+    "tokens": 10000,
+    "chunks": 54,
+    "index_ms": 578.4,
+    "retrieve_p50_ms": 542.69,
+    "retrieve_p95_ms": 708.87,
+    "retrieve_max_ms": 741.7,
+    "first_question_ms": 1121.1
+  },
+  {
+    "tokens": 20000,
+    "chunks": 98,
+    "index_ms": 1049.6,
+    "retrieve_p50_ms": 545.14,
+    "retrieve_p95_ms": 732.8,
+    "retrieve_max_ms": 763.91,
+    "first_question_ms": 1594.8
+  },
+  {
+    "tokens": 20030,
+    "chunks": 98,
+    "index_ms": 1465.8,
+    "retrieve_p50_ms": 579.26,
+    "retrieve_p95_ms": 763.31,
+    "retrieve_max_ms": 807.24,
+    "first_question_ms": 2045.1
+  }
+]

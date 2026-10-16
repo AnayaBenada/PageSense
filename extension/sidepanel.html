@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PageSense</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <img src="icons/icon32.png" alt="" width="20" height="20" />
+      <span>PageSense</span>
+      <span id="status-dot" class="dot" title="Checking backend…"></span>
+    </div>
+    <div class="actions">
+      <button id="reread" class="icon-btn" title="Re-read page">↻</button>
+      <button id="clear" class="icon-btn" title="Clear chat">⌫</button>
+      <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <section id="settings" class="settings" hidden>
+    <label for="backend-url">Backend URL</label>
+    <div class="row">
+      <input id="backend-url" type="url" spellcheck="false" />
+      <button id="save-settings">Save</button>
+    </div>
+    <p id="health-detail" class="muted small"></p>
+  </section>
+
+  <div id="page-info" class="page-info">
+    <div id="page-title" class="page-title">—</div>
+    <div id="page-meta" class="muted small"></div>
+  </div>
+
+  <main id="chat" class="chat" aria-live="polite">
+    <div id="empty" class="empty">
+      <p><strong>Ask anything about this page.</strong></p>
+      <p class="muted">Answers come only from the page's content, with clickable sources.</p>
+      <div class="suggestions">
+        <button class="chip suggestion">Summarize this page</button>
+        <button class="chip suggestion">What are the key points?</button>
+        <button class="chip suggestion">What are the requirements or prerequisites?</button>
+      </div>
+    </div>
+  </main>
+
+  <form id="ask-form" class="composer">
+    <textarea id="question" rows="1" placeholder="Ask about this page…" maxlength="2000" required></textarea>
+    <button id="send" type="submit" title="Ask (Enter)">➤</button>
+  </form>
+
+  <script src="markdown.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
