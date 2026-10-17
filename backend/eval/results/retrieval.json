@@ -1,0 +1,19 @@
+{
+  "chunk_tokens": 300,
+  "overlap": 50,
+  "top_k": 5,
+  "reranker": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+  "n_questions": 49,
+  "hit@1": 0.7347,
+  "hit@3": 0.9184,
+  "hit@5": 0.9796,
+  "mrr": 0.8398,
+  "avg_query_ms": 505.06,
+  "misses": [
+    {
+      "page": "wiki_transformer",
+      "question": "Which paper introduced the transformer and who wrote it?",
+      "rank": null
+    }
+  ]
+}

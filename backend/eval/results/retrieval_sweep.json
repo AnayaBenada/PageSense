@@ -1,0 +1,181 @@
+[
+  {
+    "chunk_tokens": 200,
+    "overlap": 40,
+    "top_k": 5,
+    "n_questions": 49,
+    "hit@1": 0.5306,
+    "hit@3": 0.8571,
+    "hit@5": 0.9388,
+    "mrr": 0.6895,
+    "avg_query_ms": 7.61,
+    "misses": [
+      {
+        "page": "react_useeffect",
+        "question": "Why does my Effect run twice in development?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "How does React compare dependencies between renders?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "Which paper introduced the transformer and who wrote it?",
+        "rank": null
+      }
+    ]
+  },
+  {
+    "chunk_tokens": 300,
+    "overlap": 50,
+    "top_k": 3,
+    "n_questions": 49,
+    "hit@1": 0.551,
+    "hit@3": 0.8776,
+    "mrr": 0.7007,
+    "avg_query_ms": 6.63,
+    "misses": [
+      {
+        "page": "fastapi_first_steps",
+        "question": "What types of values can a path operation function return?",
+        "rank": null
+      },
+      {
+        "page": "mdn_using_fetch",
+        "question": "What are the possible values of the request mode?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "Why does my Effect run twice in development?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "How does React compare dependencies between renders?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "Do Effects run during server rendering?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "Which paper introduced the transformer and who wrote it?",
+        "rank": null
+      }
+    ]
+  },
+  {
+    "chunk_tokens": 300,
+    "overlap": 50,
+    "top_k": 5,
+    "n_questions": 49,
+    "hit@1": 0.551,
+    "hit@3": 0.8776,
+    "hit@5": 0.9388,
+    "mrr": 0.7139,
+    "avg_query_ms": 5.98,
+    "misses": [
+      {
+        "page": "react_useeffect",
+        "question": "Why does my Effect run twice in development?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "Do Effects run during server rendering?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "Which paper introduced the transformer and who wrote it?",
+        "rank": null
+      }
+    ]
+  },
+  {
+    "chunk_tokens": 300,
+    "overlap": 50,
+    "top_k": 8,
+    "n_questions": 49,
+    "hit@1": 0.551,
+    "hit@3": 0.8776,
+    "hit@8": 0.9592,
+    "mrr": 0.7169,
+    "avg_query_ms": 5.4,
+    "misses": [
+      {
+        "page": "react_useeffect",
+        "question": "Why does my Effect run twice in development?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "Which paper introduced the transformer and who wrote it?",
+        "rank": null
+      }
+    ]
+  },
+  {
+    "chunk_tokens": 500,
+    "overlap": 80,
+    "top_k": 5,
+    "n_questions": 49,
+    "hit@1": 0.449,
+    "hit@3": 0.6939,
+    "hit@5": 0.8163,
+    "mrr": 0.5796,
+    "avg_query_ms": 5.96,
+    "misses": [
+      {
+        "page": "fastapi_first_steps",
+        "question": "Who builds FastAPI Cloud?",
+        "rank": null
+      },
+      {
+        "page": "git_branching_merging",
+        "question": "How do you delete a branch you no longer need?",
+        "rank": null
+      },
+      {
+        "page": "mdn_using_fetch",
+        "question": "Why is a no-cors response called opaque?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "Why does my Effect run twice in development?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "What does useEffect return?",
+        "rank": null
+      },
+      {
+        "page": "react_useeffect",
+        "question": "Where can useEffect be called?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "Which paper introduced the transformer and who wrote it?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "What is FlashAttention?",
+        "rank": null
+      },
+      {
+        "page": "wiki_transformer",
+        "question": "How does speculative decoding speed up generation?",
+        "rank": null
+      }
+    ]
+  }
+]
