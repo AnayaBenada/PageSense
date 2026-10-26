@@ -1,0 +1,15 @@
+{
+  "dataset": "dataset_holdout2",
+  "chunk_tokens": 300,
+  "overlap": 50,
+  "top_k": 5,
+  "reranker": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+  "hybrid_search": false,
+  "n_questions": 21,
+  "hit@1": 0.9524,
+  "hit@3": 1.0,
+  "hit@5": 1.0,
+  "mrr": 0.9762,
+  "avg_query_ms": 537.06,
+  "misses": []
+}

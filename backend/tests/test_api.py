@@ -117,7 +117,7 @@ def test_reranker_reorders_and_sources_stay_in_page_order(fake_llm):
         def score(self, query, texts):
             return [1.0 if "gardening" in t else 0.0 for t in texts]
 
-    cfg = Settings(chunk_tokens=60, chunk_overlap=10, top_k=2, min_score=0.0, rerank_candidates=10)
+    cfg = Settings(chunk_tokens=60, chunk_overlap=10, top_k=2, min_score=0.0, rerank_candidates=10, neighbor_hits=0)
     app = create_app(cfg, embedder=FakeEmbedder(), llm=fake_llm, reranker=PreferGardening())
     with TestClient(app) as c:
         pid = c.post("/index", json=PAGE).json()["page_id"]

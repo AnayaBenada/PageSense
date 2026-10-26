@@ -19,7 +19,7 @@ from .config import Settings, settings as default_settings
 from .embedder import Embedder, Reranker
 from .index_store import IndexStore, PageIndex
 from .llm import LLMError, OllamaClient
-from .rag import build_messages, is_overview_question, overview_hits, page_order, retrieval_query, retrieve
+from .rag import add_neighbors, build_messages, is_overview_question, overview_hits, page_order, retrieval_query, retrieve
 from .schemas import AskRequest, AskResponse, IndexRequest, IndexResponse, Source, Timings
 
 log = logging.getLogger("pagesense")
@@ -118,7 +118,9 @@ def create_app(
                 cfg.min_score,
                 request.app.state.reranker,
                 cfg.rerank_candidates,
+                cfg.hybrid_search,
             )
+            hits = add_neighbors(page, hits, cfg.neighbor_hits)
         hits = page_order(hits)
         retrieve_ms = _ms(start)
         sources = [Source(chunk_id=h.chunk.id, heading=h.chunk.heading, text=h.chunk.text, score=None if h.score is None else round(h.score, 4)) for h in hits]

@@ -16,9 +16,9 @@ from app.rag import retrieve
 from .common import contains_evidence, load_dataset, load_pages, make_reranker, make_store, save_result
 
 
-def evaluate(chunk_tokens: int, overlap: int, top_k: int, reranker=None, verbose: bool = False) -> dict:
+def evaluate(chunk_tokens: int, overlap: int, top_k: int, reranker=None, verbose: bool = False, dataset: str = "dataset") -> dict:
     pages = load_pages()
-    questions = [q for q in load_dataset() if q["evidence"]]
+    questions = [q for q in load_dataset(dataset) if q["evidence"]]
     store = make_store(chunk_tokens, overlap)
     indexed = {name: store.add(p["url"], p["title"], p["text"])[0] for name, p in pages.items()}
 
@@ -29,7 +29,7 @@ def evaluate(chunk_tokens: int, overlap: int, top_k: int, reranker=None, verbose
     for q in questions:
         page = indexed[q["page"]]
         # Same retrieval the app runs, keeping enough results to score hit@3 when k < 3.
-        ranked = retrieve(store, page, q["question"], max(top_k, 3), settings.min_score, reranker, settings.rerank_candidates)
+        ranked = retrieve(store, page, q["question"], max(top_k, 3), settings.min_score, reranker, settings.rerank_candidates, settings.hybrid_search)
         rank = next((i for i, h in enumerate(ranked, 1) if contains_evidence(h.chunk.text, q["evidence"])), None)
         for k in hits:
             hits[k] += rank is not None and rank <= k
@@ -40,10 +40,12 @@ def evaluate(chunk_tokens: int, overlap: int, top_k: int, reranker=None, verbose
 
     n = len(questions)
     result = {
+        "dataset": dataset,
         "chunk_tokens": chunk_tokens,
         "overlap": overlap,
         "top_k": top_k,
         "reranker": settings.rerank_model if reranker else None,
+        "hybrid_search": settings.hybrid_search,
         "n_questions": n,
         "hit@1": round(hits[1] / n, 4),
         "hit@3": round(hits[3] / n, 4),
@@ -65,6 +67,7 @@ def main() -> None:
     ap.add_argument("--top-k", type=int, default=5)
     ap.add_argument("--sweep", action="store_true")
     ap.add_argument("--no-rerank", action="store_true", help="FAISS ranking only")
+    ap.add_argument("--dataset", default="dataset", help="dataset, dataset_holdout or dataset_holdout2")
     args = ap.parse_args()
     reranker = None if args.no_rerank else make_reranker()
 
@@ -75,13 +78,14 @@ def main() -> None:
     )
     results = []
     for size, overlap, k in configs:
-        r = evaluate(size, overlap, k, reranker, verbose=not args.sweep)
+        r = evaluate(size, overlap, k, reranker, verbose=not args.sweep, dataset=args.dataset)
         results.append(r)
         print(
             f"rerank={'on ' if reranker else 'off'} chunk={size:>3} overlap={overlap:>2} k={k}:  hit@1={r['hit@1']:.1%}  hit@3={r['hit@3']:.1%}  "
             f"hit@{k}={r[f'hit@{k}']:.1%}  MRR={r['mrr']:.3f}  ({r['n_questions']} q, {r['avg_query_ms']} ms/query)"
         )
-    suffix = "" if reranker else "_norerank"
+    suffix = ("" if reranker else "_norerank") + ("_hybrid" if settings.hybrid_search else "")
+    suffix += "" if args.dataset == "dataset" else "_" + args.dataset.removeprefix("dataset_")
     path = save_result(f"retrieval_sweep{suffix}.json" if args.sweep else f"retrieval{suffix}.json", results if args.sweep else results[0])
     print(f"saved {path}")
 

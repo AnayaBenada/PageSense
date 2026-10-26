@@ -1,0 +1,243 @@
+id,page,question,reference_answer,answer,answerable,refused,citations_valid,n_sources,retrieve_ms,generate_ms,grade,notes
+1,fastapi_first_steps,What class does FastAPI inherit from?,"Starlette; FastAPI inherits directly from it, so all Starlette functionality can be used too","According to the page excerpts, FastAPI inherits directly from Starlette. This is stated in the following excerpts:
+
+[1] (section: First Steps > Deploy your app (optional))
+Additionally, other tools might not be able to find it, for example the VS Code Extension or FastAPI Cloud, so it is recommended to use the entrypoint in pyproject.toml.
+
+[2] (section: First Steps > Recap, step by step > Step 2: create a FastAPI ""instance"")
+FastAPI is a Python class that provides all the functionality for your API.
+
+Technical Details
+
+FastAPI is a class that inherits directly from Starlette.
+
+You can use all the Starlette functionality with FastAPI too.
+
+[4] (section: First Steps > Recap, step by step > Step 3: create a path operation > Define a path operation decorator)
+FastAPI is a Python class that provides all the functionality for your API.
+
+Technical Details
+
+FastAPI is a class that inherits directly from Starlette.
+
+You can use all the Starlette functionality with FastAPI too.
+
+Therefore, the answer is: FastAPI inherits directly from Starlette.",True,False,True,6,502.39,22977.29,2,correct; also pastes an unrelated excerpt
+2,fastapi_first_steps,How should I set the entrypoint if my main.py is inside a backend folder?,"In pyproject.toml under [tool.fastapi], set entrypoint = ""backend.main:app"" (equivalent to from backend.main import app)","According to the page excerpts, to set the entrypoint if your `main.py` is inside a `backend` folder, you should configure the `entrypoint` in the `pyproject.toml` file like this:
+
+```
+[tool.fastapi]
+entrypoint = ""backend.main:app""
+```
+
+This is stated in section [3] (section: First Steps > fastapi dev with path or with --entrypoint CLI option) [3].",True,False,True,5,1041.86,8241.9,2,
+3,fastapi_first_steps,What happens when I run fastapi deploy and I'm not logged in?,"The CLI detects the app and deploys it; if you are not logged in, your browser opens to complete the authentication process","When you run `fastapi deploy` and you're not logged in, your browser will open to complete the authentication process [6].",True,False,True,6,1162.74,4378.82,2,
+4,fastapi_first_steps,Does FastAPI require me to use POST only for creating data?,"No. You are free to use each operation as you wish; FastAPI doesn't enforce any specific meaning, it's a guideline (e.g. GraphQL uses only POST)","According to the page excerpts, FastAPI does not enforce a specific meaning for the HTTP methods. The page states: ""FastAPI doesn't enforce any specific meaning. The information here is presented as a guideline, not a requirement."" [4]
+
+However, the page also mentions that when using GraphQL, it is normal to perform all actions using only POST operations. [5]
+
+Additionally, the page explains that normally, you use specific HTTP methods to perform a specific action, such as:
+
+- POST: to create data.
+- GET: to read data.
+- PUT: to update data.
+- DELETE: to delete data. [3]
+
+Therefore, while FastAPI does not require the use of POST only for creating data, it is a common practice in GraphQL to use POST for all actions, and in traditional APIs, you would typically use POST for creating data.",True,False,True,6,964.38,11013.35,2,
+5,git_branching_merging,What happens to my working directory when I switch branches?,"Git resets it to look like it did the last time you committed on that branch, adding, removing and modifying files automatically","According to the page, when you switch branches, Git resets your working directory to look like it did the last time you committed on that branch. It adds, removes, and modifies files automatically to make sure your working copy is what the branch looked like on your last commit to it. [3]
+
+In other words, when you switch to a new branch, Git resets your working directory to the state it was in at the last commit on that branch, so you can start working on the new branch from the same point as the last commit.",True,False,True,6,873.26,10786.56,2,
+6,git_branching_merging,When will Git refuse to let me switch branches?,When your working directory or staging area has uncommitted changes that conflict with the branch you're checking out (ways around it: stashing and commit amending),Git will refuse to let you switch branches if your working directory or staging area has uncommitted changes that conflict with the branch you're checking out [3].,True,False,True,6,989.75,3171.04,2,
+7,git_branching_merging,How can I get the hotfix changes into my iss53 branch?,"Merge master into iss53 with git merge master, or wait and integrate them when iss53 is merged back into master","To get the hotfix changes into your `iss53` branch, you can merge your `master` branch into your `iss53` branch by running the following command:
+
+```
+$ git merge master
+```
+
+[4] This will perform a three-way merge, using the two snapshots pointed to by the branch tips and the common ancestor of the two. This is referred to as a merge commit, and is special in that it has more than one parent.
+
+Alternatively, you can wait to integrate those changes until you decide to pull the `iss53` branch back into `master` later.",True,False,True,5,1024.39,8895.95,2,
+8,git_branching_merging,How do I mark a conflicted file as resolved?,Run git add on the file; staging it marks it as resolved (git mergetool also stages it if you say the merge was successful),"To mark a conflicted file as resolved, you need to run `git add` on each file that has been resolved. This marks the file as resolved in Git.",True,False,,5,977.69,6253.36,2,
+9,mdn_using_fetch,What happens if I abort a request after fetch() has fulfilled but before I read the body?,Reading the response body rejects with an AbortError exception,"According to the page, if you abort a request after `fetch()` has fulfilled but before you read the body, then attempting to read the response body will reject with an `AbortError` exception [3].",True,False,True,5,1449.23,5405.98,2,
+10,mdn_using_fetch,Does fetch() reject its promise when the server returns a 404?,"No. fetch() only rejects on errors like a network error or bad scheme; for a 404 it fulfills with a Response, so check response.ok or status","According to the page excerpts, [1], [5], and [6], the answer is yes, but with some conditions.
+
+The page states that the promise returned by `fetch()` will reject on some errors, such as a network error or a bad scheme. However, if the server responds with an error like 404, then `fetch()` fulfills with a Response, so we have to check the status before we can read the response body.
+
+The page also states that if the request is aborted after the `fetch()` call has been fulfilled but before the response body has been read, then attempting to read the response body will reject with an `AbortError` exception.
+
+However, it does not explicitly state that a 404 status code will reject the promise. Instead, it states that if the server responds with an error like 404, then `fetch()` fulfills with a Response, and we have to check the status before we can read the response body.
+
+Therefore, the answer is that `fetch()` does not reject its promise when the server returns a 404, but rather fulfills with a Response and allows us to check the status before reading the response body.
+
+I couldn't find that on this page.",True,True,True,6,1323.15,16872.67,1,"says ""yes"" first, then correctly explains it fulfills with a Response, then ends with the refusal line (contradictory)"
+11,mdn_using_fetch,How can I process a large text response as it arrives instead of waiting for the whole file?,Stream response.body: pipe it through a TextDecoderStream (response.body.pipeThrough(new TextDecoderStream())) and iterate with for await,"To process a large text response as it arrives instead of waiting for the whole file, you can use the `Response.body` as a `ReadableStream` object and pipe it through a `TextDecoderStream` to get the text content.
+
+Here's an example:
+```javascript
+const url = ""https://www.example.org/a-large-file.txt"";
+
+async function fetchTextAsStream(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+    const stream = response.body.pipeThrough(new TextDecoderStream());
+    for await (const value of stream) {
+      console.log(value);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+```
+This code creates a `ReadableStream` from the response body and pipes it through a `TextDecoderStream`, which decodes the UTF-8-encoded body data as text. The `for await` loop then iterates over the stream, processing each chunk of the response as it arrives.
+
+Alternatively, you can use the `makeTextFileLineIterator` function to process the response line by line:
+```javascript
+async function* makeTextFileLineIterator(fileURL) {
+  const response = await fetch(fileURL);
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+
+  let { value: chunk = """", done: readerDone } = await reader.read();
+
+  const newline = /\r?\n/g;
+  let startIndex = 0;
+
+  while (true) {
+    const result = newline.exec(chunk);
+    if (!result) {
+      if (readerDone) break;
+      const remainder = chunk.slice(startIndex);
+      ({ value: chunk, done: readerDone } = await reader.read());
+      chunk = remainder + (chunk || """");
+      startIndex = newline.lastIndex = 0;
+      continue;
+    }
+    yield chunk.substring(startIndex, result.index);
+    startIndex = newline.lastIndex;
+  }
+
+  if (startIndex < chunk.length) {
+    // Last line didn't end in a newline char
+    yield chunk.substring(startIndex);
+  }
+}
+
+async function run(urlOfFile) {
+  for await (const line of makeTextFileLineIterator(urlOfFile)) {
+    processLine(line);
+  }
+}
+
+function processLine(line) {
+  console.log(line);
+}
+
+run(""https://www.example.org/a-large-file.txt"");
+```
+This code creates an iterator that yields each line of the response as it arrives, allowing you to process the response line by line.",True,False,,5,13404.66,73098.15,2,
+12,python_datastructures,How do I create a tuple with only one item?,"Follow the value with a comma, e.g. singleton = 'hello', ; enclosing a single value in parentheses is not enough","According to the page, a tuple with one item is constructed by following a value with a comma [3]. For example:
+
+```
+>>> singleton = 'hello',    # <-- note trailing comma
+>>> len(singleton)
+1
+>>> singleton
+('hello',)
+```
+
+This means that to create a tuple with only one item, you need to follow the value with a comma, as shown in the example.",True,False,True,5,4698.23,29523.51,2,
+13,python_datastructures,How can I merge two dictionaries?,"Use dictionary unpacking with **, e.g. {**odds, **evens}","To merge two dictionaries, you can use dictionary unpacking (via **) as shown in excerpt [4] [5]:
+
+```
+>>> odds = {i: i**2 for i in (1, 3, 5)}
+>>> evens = {i: i**2 for i in (2, 4, 6)}
+>>> {**odds, **evens}
+{1: 1, 3: 9, 5: 25, 2: 4, 4: 16, 6: 36}
+```
+
+Alternatively, you can use the dict() constructor with a sequence of key-value pairs, as shown in excerpt [4] [4]:
+
+```
+>>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])
+{'sape': 4139, 'guido': 4127, 'jack': 4098}
+```
+
+Note that the page excerpt [4] also mentions that when the keys are simple strings, it is sometimes easier to specify pairs using keyword arguments:
+
+```
+>>> dict(sape=4139, guido=4127, jack=4098)
+{'sape': 4139, 'guido': 4127, 'jack': 4098}
+```
+
+However, this method is not explicitly mentioned as a way to merge two dictionaries.",True,False,True,5,9509.53,17826.28,1,"gives ** unpacking correctly but also offers the dict() constructor as a way to merge, which it is not"
+14,python_datastructures,"Why can't a list like [None, 'hello', 10] be sorted?",Integers can't be compared to strings and None can't be compared to other types,"According to the page, a list like [None, 'hello', 10] can't be sorted because integers can't be compared to strings and None can't be compared to other types. [3] This is stated as: ""Another thing you might notice is that not all data can be sorted or compared. For instance, [None, 'hello', 10] doesn’t sort because integers can’t be compared to strings and None can’t be compared to other types. Also, there are some types that don’t have a defined ordering relation. For example, 3+4j < 5+7j isn’t a valid comparison.""",True,False,True,7,3045.0,14029.05,2,
+15,react_useeffect,How can I log a page visit when the url changes but not when only shoppingCart changes?,"Move the code that reads shoppingCart into an Effect Event declared with useEffectEvent (onVisit), call it from the Effect, and keep only url as a dependency","To log a page visit when the `url` changes but not when only the `shoppingCart` changes, you can use the `useEffect` hook with the `useEffectEvent` hook.
+
+First, declare an `Effect Event` with `useEffectEvent` and move the code reading `shoppingCart` inside of it [5]. This ensures that `shoppingCart` won't re-run your `Effect`.
+
+```javascript
+function Page({ url, shoppingCart }) {
+  const onVisit = useEffectEvent(visitedUrl => {
+    logVisit(visitedUrl, shoppingCart.length)
+  });
+  useEffect(() => {
+    onVisit(url);
+  }, [url]); // All dependencies declared
+}
+```
+
+By doing this, you ensure that the `Effect` only runs when the `url` changes, and not when only the `shoppingCart` changes. This is because `Effect Events` are not reactive and must always be omitted from dependencies of your `Effect`, as stated in [5].",True,False,True,6,2236.93,15130.17,2,
+16,react_useeffect,"Why does an options object created during rendering make my Effect reconnect after every commit, and how do I fix it?","The object is created from scratch on every render, so the dependency is always different; create the object inside the Effect so it only depends on roomId","According to the page excerpts, an options object created during rendering makes your Effect reconnect after every commit because the options object is different for every render [2]. This is because the options object is created from scratch on every re-render, and as a result, its dependencies are always different on a commit [2].
+
+To fix this issue, you should create the options object inside the Effect, rather than creating it during rendering [2]. This way, the options object will not change unless you update its dependencies.
+
+For example, instead of this:
+```javascript
+const options = { // 🚩 This object is created from scratch on every re-render
+  serverUrl: serverUrl,
+  roomId: roomId
+};
+```
+You should use this:
+```javascript
+const options = {
+  serverUrl: serverUrl,
+  roomId: roomId
+};
+```
+Inside the Effect, like this:
+```javascript
+useEffect(() => {
+  const options = {
+    serverUrl: serverUrl,
+    roomId: roomId
+  };
+  const connection = createConnection(options);
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId]);
+```
+By creating the options object inside the Effect, you ensure that it will not change unless you update its dependencies, which is the `roomId` string in this case. This way, your Effect will only reconnect when the `roomId` changes, and not after every commit.",True,False,True,6,1821.22,20555.67,2,"correct; ""instead of this / use this"" shows the same code twice"
+17,react_useeffect,Why doesn't the map widget example need a cleanup function?,"MapWidget only manages the DOM node passed to it; after the Map component is removed, the DOM node and the MapWidget instance are garbage-collected","According to the page excerpts, the map widget example does not need a cleanup function because the `MapWidget` class manages only the DOM node that was passed to it [3]. After the `Map` React component is removed from the tree, both the DOM node and the `MapWidget` class instance will be automatically garbage-collected by the browser JavaScript engine [3].",True,False,True,7,10186.37,32382.84,2,
+18,wiki_transformer,What regularization techniques did the original transformer use?,"Dropout (on each sublayer's output before the residual connection and normalization, and on the sums of token embeddings and positional encodings) and label smoothing","The original transformer used two regularization techniques: dropout and label smoothing.
+
+According to the page, dropout was applied to the output of each sublayer before its residual connection and normalization, as well as to the sums of token embeddings and positional encodings. [2]
+
+Additionally, the original paper used label smoothing, which replaces a certain target distribution with one that assigns a small amount of probability to alternative tokens. [2]
+
+These techniques can improve generalization by going against overconfidence in the training targets. [2]",True,False,True,6,1597.0,10834.12,2,
+19,wiki_transformer,What is weight tying?,"Using the transpose of the embedding matrix as the un-embedding matrix, to avoid doubling embedding-related parameters and to avoid divergence during training","According to the page, weight tying is a practice used in some architectures to avoid needing double the amount of embedding-related parameters and to avoid divergence during training. Specifically, it involves using the transpose of the embedding matrix as the un-embedding matrix, as mentioned in [4] and [5].",True,False,True,7,937.86,16011.7,2,
+20,wiki_transformer,What is the difference between tensor parallelism and pipeline parallelism?,Tensor parallelism splits operations within individual layers; pipeline parallelism assigns consecutive groups of layers to different devices,"According to the page excerpts, tensor parallelism and pipeline parallelism are two different methods of parallelizing the training of large transformer models.
+
+Tensor parallelism splits operations within individual layers, while pipeline parallelism assigns consecutive groups of layers to different devices [43].
+
+In other words, tensor parallelism focuses on parallelizing the computations within individual layers, whereas pipeline parallelism focuses on parallelizing the processing of consecutive groups of layers across different devices.",True,False,False,6,1636.06,22522.94,2,"correct; cites [43], a Wikipedia footnote, not an excerpt"
+21,wiki_transformer,What does ALiBi allow with respect to context window length?,"Pretraining on short context windows, then fine-tuning on longer context windows","According to the page excerpts, ALiBi allows pretraining on short context windows, then fine-tuning on longer context windows [3]. This is stated in the following sentence:
+
+""ALiBi allows pretraining on short context windows, then fine-tuning on longer context windows."" [3]",True,False,True,5,938.64,28172.76,2,
+22,mdn_using_fetch,How do I automatically retry a failed fetch with exponential backoff?,(not on page),I couldn't find that on this page.,False,True,,6,6472.88,18824.88,,
+23,python_datastructures,How do I define a dataclass?,(not on page),I couldn't find that on this page.,False,True,,7,10687.24,55784.42,,
+24,react_useeffect,How do I use useReducer to manage complex state?,(not on page),I couldn't find that on this page.,False,True,,7,1917.86,6799.92,,

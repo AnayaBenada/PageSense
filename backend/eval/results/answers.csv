@@ -1,72 +1,168 @@
 id,page,question,reference_answer,answer,answerable,refused,citations_valid,n_sources,retrieve_ms,generate_ms,grade,notes
-1,fastapi_first_steps,"What URL serves the interactive API documentation, and what provides it?","http://127.0.0.1:8000/docs, provided by Swagger UI",The URL that serves the interactive API documentation is http://127.0.0.1:8000/docs. It is provided by Swagger UI. [2],True,False,True,5,857.47,5404.12,2,graded by Claude
-2,fastapi_first_steps,Where can I see the alternative API docs?,"http://127.0.0.1:8000/redoc, provided by ReDoc",You can see the alternative API docs at http://127.0.0.1:8000/redoc. [2],True,False,True,5,949.35,4602.5,2,graded by Claude
-3,fastapi_first_steps,Where can I view the raw OpenAPI schema that FastAPI generates?,At http://127.0.0.1:8000/openapi.json,You can view the raw OpenAPI schema that FastAPI generates at: http://127.0.0.1:8000/openapi.json. [3],True,False,True,5,1040.98,9517.98,2,graded by Claude
-4,fastapi_first_steps,How do I configure the app entrypoint in pyproject.toml?,"Add a [tool.fastapi] section with entrypoint = ""main:app""","You can configure the app entrypoint in pyproject.toml like this:
+1,fastapi_first_steps,"What URL serves the interactive API documentation, and what provides it?","http://127.0.0.1:8000/docs, provided by Swagger UI","To serve the interactive API documentation, the URL is http://127.0.0.1:8000/docs. It is provided by Swagger UI. [2]
+
+Additionally, there is an alternative automatic documentation provided by ReDoc, which can be accessed at http://127.0.0.1:8000/redoc. [3]",True,False,True,5,7395.48,20654.77,2,graded by Claude
+2,fastapi_first_steps,Where can I see the alternative API docs?,"http://127.0.0.1:8000/redoc, provided by ReDoc","According to the page, you can see the alternative API docs by going to http://127.0.0.1:8000/redoc. [2] This is mentioned in the section ""Alternative API docs"" and is also repeated in section [2].",True,False,True,5,1447.33,10441.86,2,graded by Claude
+3,fastapi_first_steps,Where can I view the raw OpenAPI schema that FastAPI generates?,At http://127.0.0.1:8000/openapi.json,"According to the page, you can view the raw OpenAPI schema that FastAPI generates by visiting the URL: http://127.0.0.1:8000/openapi.json. [3] This is mentioned in the section ""OpenAPI and JSON Schema"" where it says:
+
+""Check the openapi.json
+If you are curious about what the raw OpenAPI schema looks like, FastAPI automatically generates a JSON (schema) with the descriptions of all your API.""
+
+Additionally, the page also mentions that the raw OpenAPI schema is stored in a JSON file, and you can see it directly at the specified URL. [2]",True,False,True,5,2919.21,13489.81,2,graded by Claude
+4,fastapi_first_steps,How do I configure the app entrypoint in pyproject.toml?,"Add a [tool.fastapi] section with entrypoint = ""main:app""","To configure the app entrypoint in pyproject.toml, you can add the following configuration to your pyproject.toml file:
 
 ```
 [tool.fastapi]
 entrypoint = ""main:app""
 ```
 
-[3]",True,False,True,5,1188.61,4068.9,2,graded by Claude
-5,fastapi_first_steps,What types of values can a path operation function return?,"A dict, list, singular values like str or int, and Pydantic models; they are converted to JSON automatically","According to [5], a path operation function can return:
+This will tell the fastapi command to import the app like:
 
-* A dict
+```
+from main import app
+```
+
+If your code was structured like:
+
+```
+.
+├── backend
+│   ├── main.py
+│   ├── __init__.py
+```
+
+Then you would set the entrypoint as:
+
+```
+[tool.fastapi]
+entrypoint = ""backend.main:app""
+```
+
+which would be equivalent to:
+
+```
+from backend.main import app
+```
+
+[4]",True,False,True,6,1405.84,9653.36,2,graded by Claude
+5,fastapi_first_steps,What types of values can a path operation function return?,"A dict, list, singular values like str or int, and Pydantic models; they are converted to JSON automatically","According to the page excerpts, a path operation function can return various types of values, including:
+
+* A dict (as shown in [5])
 * A list
-* Singular values as str, int, etc.
+* Singular values as str, int, etc. (as shown in [5])
+* Pydantic models (as hinted in [5], with more information to come later)
+* Other objects and models that will be automatically converted to JSON (as hinted in [5])
 
-Additionally, it can also return Pydantic models (mentioned in [5]) and other objects and models that will be automatically converted to JSON.",True,False,True,5,421.26,5690.25,2,graded by Claude
-6,fastapi_first_steps,Who builds FastAPI Cloud?,The same author and team behind FastAPI,The page excerpts state that FastAPI Cloud is built by the same author and team behind FastAPI. [4],True,False,True,5,549.87,3590.52,2,graded by Claude
-7,fastapi_first_steps,What is the command to deploy the app to FastAPI Cloud?,fastapi deploy,"The command to deploy the app to FastAPI Cloud is:
+Note that the page does not provide an exhaustive list of all possible return types, but rather highlights some examples.",True,False,True,5,1112.28,9914.07,2,graded by Claude
+6,fastapi_first_steps,Who builds FastAPI Cloud?,The same author and team behind FastAPI,"According to the page excerpts, FastAPI Cloud is built by the same author and team behind FastAPI. This is stated in excerpt [5] (section: First Steps > Recap, step by step > Step 6: Deploy it) as follows:
+
+""FastAPI Cloud is built by the same author and team behind FastAPI.""
+
+Additionally, excerpt [5] also mentions that FastAPI Cloud is the primary sponsor and funding provider for the FastAPI and friends open source projects, but this is not directly answering the question of who builds it.",True,False,True,6,1094.04,9521.11,2,graded by Claude
+7,fastapi_first_steps,What is the command to deploy the app to FastAPI Cloud?,fastapi deploy,"According to the page excerpts, the command to deploy the app to FastAPI Cloud is:
 
 ```
 uv run fastapi deploy
 ```
 
-[4]",True,False,True,5,527.02,3191.79,2,graded by Claude
-8,fastapi_first_steps,"What does @app.get(""/"") tell FastAPI?",That the function right below handles requests to the path / using a GET operation,"According to [3] [2], the @app.get(""/"") tells FastAPI that the function right below is in charge of handling requests that go to the path ""/"" using a get operation.",True,False,True,5,519.76,4303.68,2,graded by Claude
-9,git_branching_merging,What command creates a new branch and switches to it at the same time?,"git checkout -b <branch>, e.g. git checkout -b iss53","The command that creates a new branch and switches to it at the same time is:
+This is stated in section [3] (section: First Steps > Deploy your app (optional)) [3].",True,False,True,6,1227.63,5408.42,2,graded by Claude
+8,fastapi_first_steps,"What does @app.get(""/"") tell FastAPI?",That the function right below handles requests to the path / using a GET operation,"According to [1] [2], the @app.get(""/"") tells FastAPI that the function right below is in charge of handling requests that go to the path ""/"" using a get operation.
+
+In other words, it defines a path operation decorator that corresponds to the path ""/"" with an operation get.
+
+The @app.get(""/"") syntax is a decorator that takes the function below and tells FastAPI that it handles requests to the path ""/"" with a get operation.
+
+This decorator is used to map a URL to a specific function in the FastAPI application.
+
+The page excerpt [2] also mentions that the @app.get(""/"") is a ""path operation decorator"" that tells FastAPI that the function below corresponds to the path ""/"" with an operation get.
+
+Additionally, the page excerpt [3] mentions that the @app.get(""/"") tells FastAPI that the function right below is in charge of handling requests that go to the path ""/"" using a get operation.
+
+So, to summarize, @app.get(""/"") tells FastAPI that the function below handles requests to the path ""/"" with a get operation, and it defines a path operation decorator that corresponds to the path ""/"" with an operation get.",True,False,True,6,1402.81,12173.57,2,graded by Claude
+9,git_branching_merging,What command creates a new branch and switches to it at the same time?,"git checkout -b <branch>, e.g. git checkout -b iss53","According to the page, the command that creates a new branch and switches to it at the same time is:
 
 ```
 $ git checkout -b iss53
 ```
 
-[1]",True,False,True,5,826.2,6210.19,2,graded by Claude
-10,git_branching_merging,Why did Git describe the hotfix merge as a fast-forward?,"Because the hotfix commit was directly ahead of the current commit, so Git just moved the branch pointer forward","According to [2], Git described the hotfix merge as a fast-forward because the commit C4 pointed to by the branch hotfix you merged in was directly ahead of the commit C2 you're on. This means that there is no divergent work to merge together, so Git simply moves the pointer forward.",True,False,True,5,1138.83,12489.34,2,graded by Claude
-11,git_branching_merging,How do you delete a branch you no longer need?,"git branch -d <branch>, e.g. git branch -d hotfix","You can delete a branch you no longer need using the `-d` option with `git branch`. For example:
+This is stated in section [2] as:
 
-```
-$ git branch -d hotfix
-Deleted branch hotfix (3a0874c).
-```
+""First, let’s say you’re working on your project and have a couple of commits already on the master branch. ... To create a new branch and switch to it at the same time, you can run the git checkout command with the -b switch:"" [2]
 
-[5]",True,False,True,5,900.45,5943.77,2,graded by Claude
-12,git_branching_merging,What command opens a graphical tool to resolve merge conflicts?,git mergetool,The command that opens a graphical tool to resolve merge conflicts is `$ git mergetool` [3].,True,False,True,5,826.0,5161.15,2,graded by Claude
-13,git_branching_merging,What do the <<<<<<< and >>>>>>> markers in a conflicted file mean?,They delimit the conflicting versions: the HEAD version above the ======= and the merged branch's version below it,The <<<<<<< and >>>>>>> markers in a conflicted file mean that the version in HEAD (the current branch) is on the left and the version in the branch being merged (iss53) is on the right. [1],True,False,True,5,634.73,1727.93,1,graded by Claude: Says HEAD is 'left' and branch 'right'; it's above/below the ======= line
-14,git_branching_merging,What are the steps the example follows when a critical hotfix is needed?,"Switch to the production branch, create a hotfix branch, merge it after testing and push to production, then switch back to the original work","According to the page excerpts, the steps the example follows when a critical hotfix is needed are:
+This is also rephrased in section [2] as:
 
-1. Switch to the production branch [2].
-2. Create a branch to add the hotfix [2].
-3. After it's tested, merge the hotfix branch, and push to production [2].
-4. Switch back to the original user story and continue working [2].",True,False,True,5,302.47,5212.13,2,graded by Claude
-15,git_branching_merging,What is git checkout -b shorthand for?,git branch <name> followed by git checkout <name>,"According to [1], `git checkout -b` is shorthand for:
+""This is shorthand for: ... $ git branch iss53 $ git checkout iss53"" [2]
+
+Additionally, the page explains that this command is equivalent to:
 
 ```
 $ git branch iss53
 $ git checkout iss53
 ```
 
-[1]",True,False,True,5,525.22,5502.36,2,graded by Claude
+[2]",True,False,True,5,1056.69,7457.14,2,graded by Claude
+10,git_branching_merging,Why did Git describe the hotfix merge as a fast-forward?,"Because the hotfix commit was directly ahead of the current commit, so Git just moved the branch pointer forward","According to the page, Git described the hotfix merge as a fast-forward because the commit pointed to by the branch hotfix you merged in was directly ahead of the commit C2 you're on [2]. This means that there is no divergent work to merge together, and Git simply moves the pointer forward because there is no need to merge two divergent histories. The page phrases it this way: ""when you try to merge one commit with a commit that can be reached by following the first commit's history, Git simplifies things by moving the pointer forward because there is no divergent work to merge together — this is called a “fast-forward.”"" [2]",True,False,True,6,2149.9,12429.6,2,graded by Claude
+11,git_branching_merging,How do you delete a branch you no longer need?,"git branch -d <branch>, e.g. git branch -d hotfix","To delete a branch you no longer need, you can use the `git branch -d` command, as shown in the page excerpts [4], [7]. Specifically, the page states:
+
+```
+$ git branch -d hotfix
+Deleted branch hotfix (3a0874c).
+```
+
+and
+
+```
+$ git branch -d iss53
+```
+
+This command will delete the branch and remove it from the local repository. Note that the page also mentions that if the branch has diverged from the main branch (in this case, `master`), you may need to merge it first using `git merge` before deleting it. However, in the examples provided, the branches are deleted without any issues.",True,False,True,7,1286.01,17855.45,2,graded by Claude
+12,git_branching_merging,What command opens a graphical tool to resolve merge conflicts?,git mergetool,"According to the page, the command that opens a graphical tool to resolve merge conflicts is:
+
+```
+$ git mergetool
+```
+
+This command fires up an appropriate visual merge tool and walks you through the conflicts, as shown in excerpt [3].",True,False,True,5,1240.85,3793.94,2,graded by Claude
+13,git_branching_merging,What do the <<<<<<< and >>>>>>> markers in a conflicted file mean?,They delimit the conflicting versions: the HEAD version above the ======= and the merged branch's version below it,"According to the page, the <<<<<<< and >>>>>>> markers in a conflicted file indicate the version of the file from the two branches being merged. [1]
+
+The <<<<<<< marker indicates the version of the file from the current branch (HEAD), and the >>>>>>> marker indicates the version of the file from the branch being merged (iss53). [1]
+
+These markers are used to show the differences between the two versions of the file. [1]
+
+For example, in the file `index.html`, the <<<<<<< marker indicates the version of the file from HEAD, and the >>>>>>> marker indicates the version of the file from iss53. [1]
+
+The page also explains that the <<<<<<< and >>>>>>> markers are used to show the conflicting versions of the file, and that the user must resolve the conflict by choosing one version or merging the contents themselves. [1]
+
+In the example, the <<<<<<< marker indicates the version of the file from HEAD, which contains the line `<div id=""footer"">contact : email.support@github.com</div>`, and the >>>>>>> marker indicates the version of the file from iss53, which contains the line `<div id=""footer"">please contact us at support@github.com</div>`. [1]
+
+To resolve the conflict, the user must choose one of these versions or merge the contents themselves. [1]",True,False,True,5,1551.65,23405.46,1,graded by Claude: Says which marker is HEAD vs iss53 but not the above/below ======= split
+14,git_branching_merging,What are the steps the example follows when a critical hotfix is needed?,"Switch to the production branch, create a hotfix branch, merge it after testing and push to production, then switch back to the original work","According to the page, the steps the example follows when a critical hotfix is needed are:
+
+1. Switch to the production branch [2].
+2. Create a branch to add the hotfix [2].
+3. After it's tested, merge the hotfix branch, and push to production [2].
+4. Switch back to the original user story and continue working [1].
+
+These steps are repeated in section [2] with the same wording, so they are not different.",True,False,True,5,2782.37,39216.23,2,graded by Claude
+15,git_branching_merging,What is git checkout -b shorthand for?,git branch <name> followed by git checkout <name>,"According to the page, the git checkout -b shorthand is for:
+
+```
+$ git branch iss53
+$ git checkout iss53
+```
+
+This is stated in excerpt [2] [1].",True,False,True,6,1880.62,6495.35,2,graded by Claude
 16,mdn_using_fetch,What are the possible values of the request mode?,"cors, same-origin, or no-cors (default cors)","According to the page excerpts, the possible values of the request mode are:
 
-* cors
-* same-origin
-* no-cors",True,False,,5,1201.01,4877.31,2,graded by Claude
-17,mdn_using_fetch,Can I include a body with a GET request?,"No, you cannot include a body with GET requests","No, you cannot include a body with a GET request. According to the page, ""You cannot include a body with GET requests, but it's useful for requests that send content to the server, such as POST or PUT requests."" [1]",True,False,True,5,1210.19,4447.13,2,graded by Claude
-18,mdn_using_fetch,How do I cancel a fetch request?,"Create an AbortController, pass its signal to the request, and call abort(); fetch rejects with an AbortError","To cancel a fetch request, create an AbortController, and assign its AbortSignal to the request's signal property. Then, call the controller's abort() method to cancel the request. 
+* cors [3]
+* same-origin [3]
+* no-cors [3]
 
-Here's an example from the page excerpts [4]: 
+These values determine whether a request can be made cross-origin or not.",True,False,True,5,1893.25,6545.08,2,graded by Claude
+17,mdn_using_fetch,Can I include a body with a GET request?,"No, you cannot include a body with GET requests","According to the page, you cannot include a body with a GET request. The page states: ""You cannot include a body with GET requests, but it's useful for requests that send content to the server, such as POST or PUT requests."" [1]",True,False,True,6,1498.55,11783.69,2,graded by Claude
+18,mdn_using_fetch,How do I cancel a fetch request?,"Create an AbortController, pass its signal to the request, and call abort(); fetch rejects with an AbortError","To cancel a fetch request, you need to create an `AbortController`, assign its `AbortSignal` to the request's `signal` property, and then call the controller's `abort()` method when you want to cancel the request.
+
+Here's an example of how to do it, as shown on the page [5]:
 ```javascript
 const controller = new AbortController();
 
@@ -89,28 +185,43 @@ cancelButton.addEventListener(""click"", () => {
   console.log(""Canceled fetch"");
 });
 ```
-
-And here's an example of what happens if the request is aborted after the fetch() call has been fulfilled but before the response body has been read [5]: 
+Alternatively, you can create a request from another request, while changing some of its properties using the second argument, as shown on the page [4]:
 ```javascript
-async function get() {
-  const controller = new AbortController();
-  const request = new Request(""https://example.org/get"", {
-    signal: controller.signal,
-  });
-
-  const response = await fetch(request);
-  controller.abort();
-  // The next line will throw `AbortError`
-  const text = await response.text();
-  console.log(text);
+async function post(request) {
+  try {
+    const response = await fetch(request);
+    const result = await response.json();
+    console.log(""Success:"", result);
+  } catch (error) {
+    console.error(""Error:"", error);
+  }
 }
-```",True,False,True,5,896.49,12632.39,2,graded by Claude
-19,mdn_using_fetch,Why is a no-cors response called opaque?,Its headers and body are not available to JavaScript,"According to section [4], a no-cors response is called ""opaque"" because it has a status of 0, an empty header list, and a null body.",True,False,True,5,1375.43,5022.75,1,graded by Claude: Gives status 0/empty headers/null body; misses that headers and body aren't available to JS
-20,mdn_using_fetch,What does it mean when a response body stream is locked?,"A reader was attached with getReader(), so nothing else can read the stream","According to [5], when a response body stream is locked, it means that ""if a reader has been attached to a stream using ReadableStream.getReader(), then the stream is locked, and nothing else can read the stream.""",True,False,True,5,1283.99,5343.85,2,graded by Claude
-21,mdn_using_fetch,How can I send the same request body twice?,Clone the Request with clone() before sending it,I couldn't find that on this page.,True,True,,5,1264.35,3061.28,0,graded by Claude: Wrongly declined: clone() example was on the page
-22,mdn_using_fetch,How do I check whether the response was successful before reading it?,Check response.ok (and response.status) and throw if it's not ok,"To check whether the response was successful before reading it, you can check the `Response.ok` property, which returns `true` if the status is in the 200 range.
 
-Here's an example from the page:
+const request1 = new Request(""https://example.org/post"", {
+  method: ""POST"",
+  headers: {
+    ""Content-Type"": ""application/json"",
+  },
+  body: JSON.stringify({ username: ""example1"" }),
+});
+
+const request2 = new Request(request1, {
+  body: JSON.stringify({ username: ""example2"" }),
+});
+
+post(request1);
+post(request2);
+```
+Note that if the request is aborted after the `fetch()` call has been fulfilled but before the response body has been read, then attempting to read the response body will reject with an `AbortError` exception, as shown on the page [6].",True,False,True,6,1375.61,21642.01,2,graded by Claude
+19,mdn_using_fetch,Why is a no-cors response called opaque?,Its headers and body are not available to JavaScript,"According to the page, a no-cors response is called ""opaque"" because it has a status of 0, an empty header list, and a null body [5].",True,False,True,6,2651.3,12846.85,1,graded by Claude: Status 0/empty headers/null body; misses that JS can't read them
+20,mdn_using_fetch,What does it mean when a response body stream is locked?,"A reader was attached with getReader(), so nothing else can read the stream","According to the page, when a response body stream is locked, it means that ""if a reader has been attached to a stream using ReadableStream.getReader(), then the stream is locked, and nothing else can read the stream."" [6] This is stated in the section ""Locked and disturbed streams"" on the page.",True,False,True,7,2912.4,12692.32,2,graded by Claude
+21,mdn_using_fetch,How can I send the same request body twice?,Clone the Request with clone() before sending it,"To send the same request body twice, you cannot make the request twice, as stated in [3]: ""Note that just like response bodies, request bodies are streams, and making the request reads the stream, so if a request contains a body, you can't make it twice: 'Will throw: 'Body has already been consumed.'"" 
+
+Instead, you would need to create a clone of the request before sending it, as shown in [3]: ""Instead, you would need to create a clone of the request before sending it: 'const request2 = request1.clone();'"".",True,False,True,5,2420.46,14550.84,2,graded by Claude
+22,mdn_using_fetch,How do I check whether the response was successful before reading it?,Check response.ok (and response.status) and throw if it's not ok,"To check whether the response was successful before reading it, you can check the `ok` property of the `Response` object, which returns `true` if the status is in the 200 range, as stated in [3] [4]. 
+
+Here's how you can do it:
+
 ```javascript
 async function getData() {
   const url = ""https://example.org/products.json"";
@@ -119,29 +230,112 @@ async function getData() {
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
     }
-    // …
+    // Read the response body as JSON
+    const result = await response.json();
+    console.log(result);
   } catch (error) {
     console.error(error.message);
   }
 }
 ```
-This code checks if the response is OK (200-299) before trying to read the response body. If it's not OK, it throws an error.",True,False,,5,1397.63,8073.73,2,graded by Claude
-23,mdn_using_fetch,How can I encode form data as the request body?,"Use a URLSearchParams object, with Content-Type application/x-www-form-urlencoded","You can encode form data as the request body by passing a `URLSearchParams` object as the `body` option.
 
-Here is an example:
+Alternatively, you can check the `ok` property before reading the response body, as shown in [3] [4]. 
+
+```javascript
+async function getData() {
+  const url = ""https://example.org/products.json"";
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+    // Check the response type
+    const type = response.type;
+    // Check the headers
+    const contentType = response.headers.get(""content-type"");
+    // Read the response body as JSON
+    const result = await response.json();
+    console.log(result);
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+```
+
+Note that the page also mentions that if the server responds with an error like 404, `fetch()` will fulfill with a `Response`, so you should also check the status before reading the response body, as shown in [1].",True,False,True,6,1530.85,23774.73,2,graded by Claude
+23,mdn_using_fetch,How can I encode form data as the request body?,"Use a URLSearchParams object, with Content-Type application/x-www-form-urlencoded","To encode form data as the request body, you can use a `URLSearchParams` object to encode the data, and then pass it as the `body` option in the `fetch()` function.
+
+Here's an example:
 ```javascript
 const params = new URLSearchParams();
 params.append(""username"", ""example"");
 
 const response = await fetch(`https://example.org/login?${params}`);
 ```
-This is cited from [5].",True,False,True,5,1168.81,2918.55,1,"graded by Claude: First sentence right; example shows a GET query string, not a request body"
-24,python_datastructures,What should I use to implement a queue efficiently?,"collections.deque, which has fast appends and pops from both ends","According to the page, you should use `collections.deque` to implement a queue efficiently, as it was designed to have fast appends and pops from both ends. [2]",True,False,True,4,205.51,4728.8,2,graded by Claude
-25,python_datastructures,What does list.pop() do when no index is given?,Removes and returns the last item in the list,"According to [1], when no index is specified, `list.pop()` removes and returns the last item in the list.",True,False,True,5,825.85,3855.68,2,graded by Claude
-26,python_datastructures,How do you create an empty set?,"With set(), not {} (which creates an empty dictionary)","According to [4], an empty set is created using the `set()` function, not `{}`.",True,False,True,5,850.43,5057.46,2,graded by Claude
-27,python_datastructures,How can I transpose a matrix stored as a list of lists?,list(zip(*matrix)),"You can transpose a matrix stored as a list of lists by using the `zip(*matrix)` function, as shown in excerpt [5].",True,False,True,5,907.34,4715.68,2,graded by Claude
-28,python_datastructures,How are sequences of the same type compared?,"Lexicographically: first items compared first, then the next if equal, and so on","According to section [5.8. Comparing Sequences and Other Types], sequences of the same type are compared using lexicographical ordering. This means that the comparison uses the Unicode code point number to order individual characters for strings, and the comparison is carried out recursively for sequences of the same type.",True,False,,5,824.38,5874.36,2,graded by Claude
-29,python_datastructures,How do I get both the index and the value while looping over a sequence?,Use enumerate(),"You can get both the index and the value while looping over a sequence using the `enumerate()` function.
+This will send a GET request with the encoded form data as a query string.
+
+Alternatively, you can create a `FormData` object and pass it as the `body` option:
+```javascript
+const formData = new FormData();
+formData.append(""username"", ""example"");
+
+const response = await fetch(""https://example.org/login"", {
+  method: ""POST"",
+  body: formData,
+});
+```
+Note that in this case, we're using a POST request instead of a GET request, since the `FormData` object is being used as the request body.
+
+The page also mentions that you can use `JSON.stringify()` to convert an object to a string, and then pass it as the `body` option:
+```javascript
+const response = await fetch(""https://example.org/post"", {
+  method: ""POST"",
+  body: JSON.stringify({ username: ""example"" }),
+});
+```
+However, this will only work if the server expects a JSON payload, and the `Content-Type` header is set to `application/json`.
+
+All of these examples are mentioned in the page excerpts above, specifically in sections [1], [2], [4], and [5].",True,False,True,5,1735.1,16225.44,1,graded by Claude: Still shows a GET query-string example; FormData isn't urlencoded
+24,python_datastructures,What should I use to implement a queue efficiently?,"collections.deque, which has fast appends and pops from both ends","To implement a queue efficiently, you should use `collections.deque` [4]. The page states that while appends and pops from the end of a list are fast, doing inserts or pops from the beginning of a list is slow (because all of the other elements have to be shifted by one). This is why `collections.deque` was designed to have fast appends and pops from both ends.",True,False,True,5,636.09,10418.01,2,graded by Claude
+25,python_datastructures,What does list.pop() do when no index is given?,Removes and returns the last item in the list,"According to the page, when no index is given, `list.pop()` removes and returns the last item in the list [1]. It also raises an `IndexError` if the list is empty [1].",True,False,True,5,1332.45,3012.63,2,graded by Claude
+26,python_datastructures,How do you create an empty set?,"With set(), not {} (which creates an empty dictionary)","According to the page, an empty set is created using the `set()` function, not the `{}` syntax, which creates an empty dictionary [4].",True,False,True,5,1356.9,6397.36,2,graded by Claude
+27,python_datastructures,How can I transpose a matrix stored as a list of lists?,list(zip(*matrix)),"To transpose a matrix stored as a list of lists, you can use the `zip(*matrix)` function, as shown in excerpt [6] [6]. This will return an iterator of tuples, where the i-th tuple contains the i-th element from each of the argument sequences or iterables. The `*` operator is used to unpack the elements of the matrix list, providing each one separately as an argument to the `zip` function.
+
+Alternatively, you can use a nested list comprehension, as shown in excerpt [4] [4], but this is not recommended as it is less efficient and more complex. The page also mentions that in the real world, you should prefer built-in functions to complex flow statements, and the `zip` function would do a great job for this use case.
+
+Here is an example code snippet that demonstrates this:
+```
+>>> matrix = [
+...     [1, 2, 3, 4],
+...     [5, 6, 7, 8],
+...     [9, 10, 11, 12],
+... ]
+>>> list(zip(*matrix))
+[(1, 5, 9), (2, 6, 10), (3, 7, 11), (4, 8, 12)]
+```
+Note that the `*` operator is used to unpack the elements of the matrix list, providing each one separately as an argument to the `zip` function.",True,False,True,6,1210.0,19079.45,2,graded by Claude
+28,python_datastructures,How are sequences of the same type compared?,"Lexicographically: first items compared first, then the next if equal, and so on","According to the page, sequences of the same type are compared using lexicographical ordering [5]. This means that the comparison uses the Unicode code point number to order individual characters for strings [5]. For other sequence types, the comparison is carried out recursively if the items being compared are themselves sequences of the same type [5].
+
+Additionally, the page states that if two items to be compared are themselves sequences of the same type, the lexicographical comparison is carried out recursively [5]. This means that the comparison is done character by character, from left to right, and continues until either sequence is exhausted.
+
+The page also provides examples of comparisons between sequences of the same type, including:
+
+* `(1, 2, 3) < (1, 2, 4)`
+* `[1, 2, 3] < [1, 2, 4]`
+* `'ABC' < 'C' < 'Pascal' < 'Python'`
+* `(1, 2, 3, 4) < (1, 2, 4)`
+* `(1, 2) < (1, 2, -1)`
+* `(1, 2, 3) == (1.0, 2.0, 3.0)`
+* `(1, 2, ('aa', 'ab')) < (1, 2, ('abc', 'a'), 4)`
+
+These examples illustrate how sequences of the same type are compared using lexicographical ordering.",True,False,True,6,1361.68,19589.85,2,graded by Claude
+29,python_datastructures,How do I get both the index and the value while looping over a sequence?,Use enumerate(),"According to the page, you can get both the index and the value while looping over a sequence using the `enumerate()` function [4]. The page states:
+
+""To loop over two or more sequences at the same time, the entries can be paired with the zip() function.""
+
+However, it also mentions that when looping through a sequence, the position index and corresponding value can be retrieved at the same time using the `enumerate()` function.
+
+Here is the code example from the page that demonstrates this:
 
 ```
 >>> for i, v in enumerate(['tic', 'tac', 'toe']):
@@ -152,40 +346,113 @@ This is cited from [5].",True,False,True,5,1168.81,2918.55,1,"graded by Claude: 
 2 toe
 ```
 
-[4]",True,False,True,5,1444.69,8165.03,2,graded by Claude
-30,python_datastructures,How is the del statement different from pop()?,"del removes an item by index without returning it, while pop() returns the value; del can also remove slices or clear a list","The del statement is different from pop() in that it removes an item from a list given its index, whereas pop() removes an item from a list given its value. [2]",True,False,True,5,1472.36,4546.71,0,graded by Claude: Wrong: says pop() removes by value
-31,python_datastructures,What happens if you try to assign to an element of a tuple?,"A TypeError: 'tuple' object does not support item assignment, because tuples are immutable","According to [1], ""Tuples are immutable: ... t[0] = 88888"" raises a `TypeError: 'tuple' object does not support item assignment`.",True,False,False,5,1073.73,7206.74,2,graded by Claude
-32,python_datastructures,How can the dict() constructor build a dictionary?,Directly from sequences of key-value pairs,"According to excerpt [4], the dict() constructor builds dictionaries directly from sequences of key-value pairs:
+This code uses the `enumerate()` function to loop over the sequence `['tic', 'tac', 'toe']`, and it prints both the index `i` and the value `v` for each iteration.",True,False,True,5,1383.57,13647.18,2,graded by Claude
+30,python_datastructures,How is the del statement different from pop()?,"del removes an item by index without returning it, while pop() returns the value; del can also remove slices or clear a list","According to the page, the del statement is different from pop() in the following ways:
+
+* The del statement removes an item from a list given its index, whereas pop() returns a value. [5]
+* The del statement can be used to remove slices from a list or clear the entire list, whereas pop() only removes the item at the specified index. [5]
+* The del statement can be used to delete entire variables, whereas pop() only removes the item at the specified index. [5]
+* The del statement does not raise an IndexError if the list is empty, whereas pop() raises an IndexError if the list is empty or the index is outside the list range. [5]
+* The del statement can be used to remove items from the beginning of the list, whereas pop() only removes items from the end of the list. [5]
+
+Note that the page does not provide a detailed explanation of the differences between del and pop(), but rather highlights the key differences.",True,False,True,6,1250.33,13039.36,1,"graded by Claude: Right on index/slices/variables, but invents that del doesn't raise IndexError"
+31,python_datastructures,What happens if you try to assign to an element of a tuple?,"A TypeError: 'tuple' object does not support item assignment, because tuples are immutable","According to the page, if you try to assign to an element of a tuple, it raises a `TypeError` because ""tuple objects do not support item assignment"" [1].",True,False,True,5,1383.42,7371.78,2,graded by Claude
+32,python_datastructures,How can the dict() constructor build a dictionary?,Directly from sequences of key-value pairs,"According to the page, the `dict()` constructor can build a dictionary directly from sequences of key-value pairs, as shown in excerpt [4] [4]:
 
 ```
 >>> dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])
 {'sape': 4139, 'guido': 4127, 'jack': 4098}
-```",True,False,True,5,1020.26,10296.16,2,graded by Claude
-33,react_useeffect,Why does my Effect run twice in development?,In Strict Mode React runs one extra development-only setup+cleanup cycle to stress-test that cleanup mirrors setup,"According to the page excerpts, when Strict Mode is on, React runs setup and cleanup one extra time before the actual setup, which can cause visible issues. This is a stress-test that verifies your Effect's logic is implemented correctly. If this causes visible issues, your cleanup function is missing some logic. [4]",True,False,True,5,1385.27,7755.11,2,graded by Claude
-34,react_useeffect,What does useEffect return?,undefined,"According to the page excerpts, `useEffect` returns `undefined`. [3]",True,False,True,5,1460.79,4648.8,2,graded by Claude
-35,react_useeffect,How does React compare dependencies between renders?,Using Object.is comparison,"React compares dependencies between renders using the `Object.is` comparison, as stated in [2].",True,False,True,5,857.02,6321.17,2,graded by Claude
-36,react_useeffect,What happens if I omit the dependencies argument?,The Effect re-runs after every commit of the component,"If you omit the dependencies argument, your Effect will re-run after every commit of the component. [1]",True,False,True,5,1254.12,3913.53,2,graded by Claude
-37,react_useeffect,Do Effects run during server rendering?,"No, Effects only run on the client",[2] (section: useEffect > Usage > Connecting to an external system) Effects only run on the client. They don’t run during server rendering.,True,False,True,5,1162.42,6206.51,2,graded by Claude
-38,react_useeffect,What should I use instead of useEffect if my Effect causes a visual flicker?,useLayoutEffect,"If your Effect causes a visual flicker, you should replace `useEffect` with `useLayoutEffect`. [5]",True,False,True,5,1350.0,4082.49,2,graded by Claude
-39,react_useeffect,When does React run the cleanup function?,"After every commit with changed dependencies, before running setup with new values, and after the component is removed","React runs the cleanup function:
+```
 
-* After every commit of the component with changed dependencies [1]
-* One final time after the component is removed from the page (unmounts) [2]
-* Immediately after component mounts in development mode [4]
-* Before every re-render with changed dependencies [5]",True,False,True,5,1197.13,5609.26,1,"graded by Claude: Main cases right, but adds loosely-worded/incorrect timing ('before every re-render')"
-40,react_useeffect,Where can useEffect be called?,"Only at the top level of a component or custom Hook, not inside loops or conditions","According to the page excerpts, `useEffect` can be called at the top level of a component [1].",True,False,True,5,1166.38,4189.5,1,graded by Claude: Misses 'or your own Hooks' and the no-loops/conditions rule
-41,wiki_transformer,Which paper introduced the transformer and who wrote it?,"The 2017 paper ""Attention Is All You Need"" by researchers at Google","The paper that introduced the transformer is ""Attention is All You Need"" [1]. However, the page excerpts do not mention the authors of this paper.",True,False,True,5,684.12,6171.01,1,graded by Claude: Names the paper but claims authors aren't mentioned (page says researchers at Google)
-42,wiki_transformer,What is learning rate warmup in transformer training?,Linearly scaling the learning rate from 0 to its maximum over the first part of training (often ~2% of steps) before decaying,"Learning rate warmup in transformer training is a technique where the learning rate should linearly scale up from 0 to maximal value for the first part of the training, usually recommended to be 2% of the total number of training steps, before decaying again [1].",True,False,True,5,1210.42,5653.94,2,graded by Claude
-43,wiki_transformer,What is the pre-LN transformer?,"Placing layer normalization before (not after) the attention and feedforward layers, which stabilizes training without warmup","The pre-LN transformer is a variant of the transformer architecture that uses layer normalization before (instead of after) multihead attention and feedforward layers, stabilizing training and requiring no learning rate warmup, leading to faster convergence. [2]",True,False,True,5,1461.54,4946.2,2,graded by Claude
-44,wiki_transformer,Which subword tokenization algorithms are commonly used?,Byte pair encoding (BPE) and the unigram language model (ULM),Byte pair encoding (BPE) and the unigram language model (ULM) are commonly used subword tokenization algorithms. [4],True,False,True,5,1179.43,5202.76,2,graded by Claude
-45,wiki_transformer,What problem does KV caching solve during inference?,"Keys and values for earlier tokens are the same at every step, so they are cached instead of recomputed","KV caching solves the problem of recomputing the key and value vectors at each new token during inference, by saving the already-computed key and value vectors at each attention block, so that they are not recomputed at each new token. [1]",True,False,True,5,1145.3,7009.78,2,graded by Claude
-46,wiki_transformer,What is FlashAttention?,"An algorithm that implements attention efficiently on a GPU, a communication-avoiding approach using blocked matrix multiplication","According to the page excerpts, FlashAttention is an algorithm that implements the transformer attention mechanism efficiently on a GPU. It is a communication-avoiding algorithm that performs matrix multiplications in blocks, minimizing data copying between GPU caches. [1]",True,False,True,5,1662.89,7697.71,2,graded by Claude
-47,wiki_transformer,How does speculative decoding speed up generation?,"Like speculative execution in CPUs, future tokens are computed quickly (e.g. by a smaller model) and then verified","According to [3], speculative decoding speeds up generation by verifying future tokens quickly, then discarding incorrect ones and computing them slowly. This allows for parallel verification of tokens, reducing the overall generation time.",True,False,True,5,1262.16,6268.92,1,graded by Claude: Garbled mechanism ('computing them slowly')
-48,wiki_transformer,Did the original transformer paper find learned positional encodings better than sinusoidal ones?,"No, it found learned positional encoding not superior to the sinusoidal one","The original transformer paper reported using a learned positional encoding, but found it not superior to the sinusoidal one.[1]",True,False,True,5,1093.28,5849.65,2,graded by Claude
-49,wiki_transformer,What does Multi-Query Attention change compared to multihead attention?,"All heads share a single key and value projection, so only one KV vector needs caching","According to [2], Multi-Query Attention changes the Multihead Attention mechanism by having only one instead of multiple attention heads.",True,False,True,5,933.33,5044.21,0,"graded by Claude: Wrong: MQA shares keys/values across heads, it doesn't use a single head"
-50,fastapi_first_steps,How do I connect FastAPI to a PostgreSQL database?,(not on page),I couldn't find that on this page.,False,True,,5,700.24,5376.47,,
-51,git_branching_merging,How do I rebase my branch onto main?,(not on page),I couldn't find that on this page.,False,True,,5,523.17,3844.26,,
-52,mdn_using_fetch,How do I open a WebSocket connection?,(not on page),I couldn't find that on this page.,False,True,,5,356.13,5618.63,,
-53,python_datastructures,How do I read a CSV file with pandas?,(not on page),I couldn't find that on this page.,False,True,,5,569.04,6763.4,,
-54,react_useeffect,How do I set up routing with React Router?,(not on page),I couldn't find that on this page.,False,True,,5,2903.56,6404.24,,
-55,wiki_transformer,What is the stock price of Nvidia?,(not on page),I couldn't find that on this page.,False,True,,1,166.32,1215.44,,
+Additionally, the page mentions that the `dict()` constructor can also build dictionaries from arbitrary key and value expressions using dictionary comprehensions, as shown in excerpt [5] [5]:
+
+```
+>>> {x: x**2 for x in (2, 4, 6)}
+{2: 4, 4: 16, 6: 36}
+```
+
+And, the `dict()` constructor can also build dictionaries from sequences of key-value pairs using the `dict()` function with keyword arguments, as shown in excerpt [6] [6]:
+
+```
+>>> dict(sape=4139, guido=4127, jack=4098)
+{'sape': 4139, 'guido': 4127, 'jack': 4098}
+```",True,False,False,5,1414.91,13139.18,1,graded by Claude: Wrongly says dict() builds dicts via comprehensions
+33,react_useeffect,Why does my Effect run twice in development?,In Strict Mode React runs one extra development-only setup+cleanup cycle to stress-test that cleanup mirrors setup,"According to the page excerpts, your Effect runs twice in development because [1] states that when Strict Mode is on, React runs setup and cleanup one extra time before the actual setup. This is a stress-test that verifies your Effect's logic is implemented correctly. If this causes visible issues, your cleanup function is missing some logic. The cleanup function should stop or undo whatever the setup function was doing.",True,False,True,7,1500.05,11920.15,2,graded by Claude
+34,react_useeffect,What does useEffect return?,undefined,"According to the page excerpts, [4], the return value of `useEffect` is:
+
+""Returns
+useEffect returns undefined.""
+
+This is stated explicitly in the page excerpts, which provide a clear and concise answer to the question.",True,False,True,7,3550.69,8971.9,2,graded by Claude
+35,react_useeffect,How does React compare dependencies between renders?,Using Object.is comparison,"According to the page excerpts, React compares dependencies between renders using the `Object.is` comparison. Specifically, it states that ""React will compare each dependency with its previous value using the Object.is comparison"" [3]. This means that React will check if the dependency has changed between renders by comparing it to its previous value using `Object.is`.",True,False,True,6,1470.42,8814.28,2,graded by Claude
+36,react_useeffect,What happens if I omit the dependencies argument?,The Effect re-runs after every commit of the component,"If you omit the dependencies argument, your Effect will re-run after every commit of the component. [1]",True,False,True,6,1823.55,6803.19,2,graded by Claude
+37,react_useeffect,Do Effects run during server rendering?,"No, Effects only run on the client","According to the page excerpts, Effects do not run during server rendering. [2] states: ""Effects only run on the client. They don’t run during server rendering.""",True,False,True,6,2648.3,9341.44,2,graded by Claude
+38,react_useeffect,What should I use instead of useEffect if my Effect causes a visual flicker?,useLayoutEffect,"If your Effect causes a visual flicker, you should replace `useEffect` with `useLayoutEffect`. [3] This is because `useEffect` runs after the browser paint, whereas `useLayoutEffect` runs before the browser paint. This ensures that the result of the Effect can be observed by the event system.",True,False,True,6,2129.82,9574.59,2,graded by Claude
+39,react_useeffect,When does React run the cleanup function?,"After every commit with changed dependencies, before running setup with new values, and after the component is removed","According to the page excerpts, React runs the cleanup function in the following situations:
+
+* After every commit of the component where the dependencies have changed [1][3]
+* When the component is removed from the DOM (unmounts) [1][3]
+* Before every re-render with changed dependencies [3]
+* Immediately after component mounts in development mode, as part of a stress-test to verify the Effect's logic is implemented correctly [5]
+* One extra time before the actual setup in development mode, as part of a stress-test to verify the Effect's logic is implemented correctly [5]",True,False,True,6,2071.7,14235.59,1,graded by Claude: Adds wrong 'before every re-render' timing
+40,react_useeffect,Where can useEffect be called?,"Only at the top level of a component or custom Hook, not inside loops or conditions","According to the page excerpts, [1], useEffect can be called at the top level of a component.",True,False,True,7,2417.71,9140.22,1,graded by Claude: Misses custom Hooks and no loops/conditions
+41,wiki_transformer,Which paper introduced the transformer and who wrote it?,"The 2017 paper ""Attention Is All You Need"" by researchers at Google","According to the page excerpts, the paper that introduced the transformer was published on June 12, 2017, and it was titled ""Attention is All You Need"". The authors of this paper are not explicitly mentioned in the provided excerpts, but it is mentioned that one of the co-authors applied the ""decoder-only"" variation of the architecture to generate fictitious Wikipedia articles before the paper was published.",True,False,,6,1684.78,11544.87,1,graded by Claude: Names the paper but says authors aren't mentioned
+42,wiki_transformer,What is learning rate warmup in transformer training?,Linearly scaling the learning rate from 0 to its maximum over the first part of training (often ~2% of steps) before decaying,"According to the page, learning rate warmup is a method used to stabilize training in the original transformer architecture. The page excerpt [1] states:
+
+""In the original paper, the authors recommended using learning rate warmup. That is, the learning rate should linearly scale up from 0 to maximal value for the first part of the training (usually recommended to be 2% of the total number of training steps), before decaying again.""
+
+This means that learning rate warmup involves gradually increasing the learning rate from 0 to its maximum value over a certain percentage of the total training steps, before decreasing it again.",True,False,True,6,1300.71,10026.35,2,graded by Claude
+43,wiki_transformer,What is the pre-LN transformer?,"Placing layer normalization before (not after) the attention and feedforward layers, which stabilizes training without warmup","According to the page excerpts, the pre-LN transformer is a variant of the transformer architecture that uses layer normalization before (instead of after) multihead attention and feedforward layers. This is stated in section [2] of the ""Transformer (deep learning) > Training"" section:
+
+""A 2020 paper found that using layer normalization before (instead of after) multihead attention and feedforward layers stabilizes training, not requiring learning rate warmup.[41] This is the 'pre-LN Transformer' and is more commonly used, compared to the original 'post-LN Transformer'.""
+
+Additionally, the page excerpts mention that the pre-LN convention is easier to train, requiring no warm-up, leading to faster convergence, as stated in section [3] of the ""Transformer (deep learning) > Training > Regularization"" section:
+
+""The pre-LN convention, proposed several times in 2018,[52] was found to be easier to train, requiring no warm-up, leading to faster convergence.[41]""
+
+The page also provides pseudocode for a standard pre-LN encoder–decoder transformer, which is adapted from Formal Algorithms for Transformers, as shown in section [5] of the ""Transformer (deep learning) > Full transformer architecture > Pseudocode"" section.",True,False,False,6,1384.12,16601.93,2,graded by Claude
+44,wiki_transformer,Which subword tokenization algorithms are commonly used?,Byte pair encoding (BPE) and the unigram language model (ULM),"According to the page, the commonly used subword tokenization algorithms are:
+
+* Byte pair encoding (BPE)
+* The unigram language model (ULM)
+
+These algorithms include a vocabularization algorithm and a dedicated segmentation algorithm. Additionally, there are segmentation algorithms that require no learning and can be applied given a vocabulary, such as greedily recognizing tokens in a pretoken by moving through it left-to-right.
+
+The page also mentions that well-known software implementations of subword tokenizers are:
+
+* Hugging Face's tokenizers Python package implemented in Rust
+* The sentencepiece Python package implemented in C++
+
+These implementations include options for disabling the built-in pretokenizer, which can be used to make entire sentences a pretoken.",True,False,,5,1320.17,10973.4,2,graded by Claude
+45,wiki_transformer,What problem does KV caching solve during inference?,"Keys and values for earlier tokens are the same at every step, so they are cached instead of recomputed","KV caching solves the problem of recomputing the key and value vectors at each new token during inference, as stated in [2] [2]. When an autoregressive transformer is used for inference, such as generating text, the query vector is different at each step, but the already-computed key and value vectors are always the same. KV caching saves the computed key and value vectors at each attention block, so that they are not recomputed at each new token. This improves hardware utilization and can reduce latency and increase throughput for systems that serve many concurrent requests.",True,False,True,6,1333.33,11275.49,1,"graded by Claude: Correct, then adds continuous-batching benefits that aren't about KV caching"
+46,wiki_transformer,What is FlashAttention?,"An algorithm that implements attention efficiently on a GPU, a communication-avoiding approach using blocked matrix multiplication","According to the page excerpts, FlashAttention is an algorithm that implements the transformer attention mechanism efficiently on a GPU. It is a communication-avoiding algorithm that performs matrix multiplications in blocks, such that each block fits within the cache of a GPU, and by careful management of the blocks it minimizes data copying between GPU caches (as data movement is slow) [2].
+
+The FlashAttention method is a communication-avoiding algorithm that fuses these operations into a single loop, increasing the arithmetic intensity. It is an online algorithm that computes the following quantities: and returns [2]. In practice, FlashAttention operates over multiple queries and keys per loop iteration, in a similar way as blocked matrix multiplication. If backpropagation is needed, then the output vectors and the intermediate arrays are cached, and during the backward pass, attention matrices are rematerialized from these, making it a form of gradient checkpointing [2].
+
+An improved version, FlashAttention-2, was developed to handle longer context lengths [3].",True,False,True,6,1342.12,15294.47,2,graded by Claude
+47,wiki_transformer,How does speculative decoding speed up generation?,"Like speculative execution in CPUs, future tokens are computed quickly (e.g. by a smaller model) and then verified","According to the page, speculative decoding speeds up generation by allowing the model to verify future tokens quickly, before actually computing them. This is done by using a smaller model or a simple heuristic to generate a few speculative tokens, which are then verified by the larger model.
+
+[4] states: ""if we had some educated guess for the values of these tokens, we could verify all of them in parallel, in one run of the model, by checking that each is indeed the token with the largest log-likelihood in the -th output.""
+
+This means that instead of running the entire model for 512 times to generate a context window, as mentioned in [4], the model can verify the speculative tokens in parallel, which reduces the overall computation time.
+
+Additionally, [4] mentions that the speculative tokens are accepted or rejected stochastically, in a way that guarantees the final output distribution is the same as if speculative decoding was not used. This suggests that the model can make educated guesses about the future tokens, which allows it to speed up generation.
+
+It's also worth noting that [5] mentions ""Multi-token prediction"", which is a method that creates a final embedding vector, which can then be further processed by another transformer block to predict the next token, and so on for arbitrarily many steps into the future. This method trades off accuracy for speed, since each new token costs just one more transformer block, rather than the entire stack.",True,False,True,6,1336.27,18528.28,2,graded by Claude
+48,wiki_transformer,Did the original transformer paper find learned positional encodings better than sinusoidal ones?,"No, it found learned positional encoding not superior to the sinusoidal one","According to the page excerpts, the original transformer paper did not find learned positional encodings better than sinusoidal ones. In fact, it is stated that ""The original transformer paper reported using a learned positional encoding,[59] but finding it not superior to the sinusoidal one.[1]"" This indicates that the sinusoidal positional encoding was preferred over the learned positional encoding in the original transformer paper.",True,False,False,7,1302.99,10958.79,2,graded by Claude
+49,wiki_transformer,What does Multi-Query Attention change compared to multihead attention?,"All heads share a single key and value projection, so only one KV vector needs caching","According to the page excerpts, Multi-Query Attention changes the Multihead Attention mechanism in the following ways:
+
+* Instead of having one [query, key, value] pair, Multi-Query Attention has just one [query, value] pair [5].
+* The computation of attention scores is performed in parallel, whereas in Multihead Attention, the computation is performed in parallel for each attention head [5].
+* The output of the attention layer is concatenated to pass into the feedforward neural network layers, whereas in Multihead Attention, the outputs of each attention head are concatenated [5].
+* The architecture of Multi-Query Attention is similar to that of Multihead Attention, but with a single group of attention heads instead of multiple groups [76].
+* Multi-Query Attention is a variant of Grouped-Query Attention (GQA), which partitions attention heads into groups, each of which shares the key-value pair [76].
+* The architecture of Multi-Query Attention is also similar to that of Mixture of Experts, with a variant of Mixture of Experts shown in Figure 2 [77].
+
+Note that the page excerpts do not provide a comprehensive explanation of the changes made by Multi-Query Attention, but rather highlight the key differences between Multi-Query Attention and Multihead Attention.",True,False,False,7,1600.55,20691.33,0,"graded by Claude: Wrong: describes MQA as a single [query, value] pair"
+50,fastapi_first_steps,How do I connect FastAPI to a PostgreSQL database?,(not on page),I couldn't find that on this page.,False,True,,5,1452.76,7131.58,,
+51,git_branching_merging,How do I rebase my branch onto main?,(not on page),I couldn't find that on this page.,False,True,,5,3256.18,8426.76,,
+52,mdn_using_fetch,How do I open a WebSocket connection?,(not on page),I couldn't find that on this page.,False,True,,6,816.15,5592.99,,
+53,python_datastructures,How do I read a CSV file with pandas?,(not on page),I couldn't find that on this page.,False,True,,7,1103.38,9497.78,,
+54,react_useeffect,How do I set up routing with React Router?,(not on page),I couldn't find that on this page.,False,True,,7,1823.57,14921.81,,
+55,wiki_transformer,What is the stock price of Nvidia?,(not on page),I couldn't find that on this page.,False,True,,3,1400.19,4101.03,,

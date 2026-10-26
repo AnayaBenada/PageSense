@@ -27,9 +27,9 @@ FIELDS = [
 ]
 
 
-def run(base_url: str, out_path) -> None:
+def run(base_url: str, out_path, dataset: str = "dataset") -> None:
     pages = load_pages()
-    data = load_dataset()
+    data = load_dataset(dataset)
     client = httpx.Client(base_url=base_url, timeout=300)
     health = client.get("/health").json()
     print(f"backend: {health['status']} · LLM {health['llm_model']} · reranker {health.get('rerank_model')}")
@@ -102,13 +102,16 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", default="http://localhost:8000")
     ap.add_argument("--summarize", metavar="CSV")
+    ap.add_argument("--dataset", default="dataset", help="dataset, dataset_holdout or dataset_holdout2")
+    ap.add_argument("--out", help="CSV path (default eval/results/answers[_holdout|_holdout2].csv)")
     args = ap.parse_args()
     if args.summarize:
         summarize(args.summarize)
         return
     RESULTS_DIR.mkdir(exist_ok=True)
     try:
-        run(args.base_url, RESULTS_DIR / "answers.csv")
+        default = "answers.csv" if args.dataset == "dataset" else f"answers_{args.dataset.removeprefix('dataset_')}.csv"
+        run(args.base_url, args.out or RESULTS_DIR / default, args.dataset)
     except httpx.ConnectError:
         sys.exit(f"Backend not reachable at {args.base_url}. Start it: uvicorn app.main:app --port 8000")
 

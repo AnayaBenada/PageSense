@@ -14,6 +14,13 @@ class Settings:
     # Cross-encoder that re-scores the top candidates from FAISS. Empty string disables it.
     rerank_model: str = _env("RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-12-v2")
     rerank_candidates: int = int(_env("RERANK_CANDIDATES", "20"))
+    # Also add keyword (BM25) matches to the candidates, not just embedding matches.
+    # Off by default: with the reranker on it lowered hit@5 from 98.0% to 93.9% on
+    # the eval set and doubled retrieval time (see README).
+    hybrid_search: bool = _env("HYBRID_SEARCH", "0") not in ("0", "false", "")
+    # Also send the chunks on either side of the best `neighbor_hits` matches, so
+    # explanations that continue into the next chunk (code, lists) aren't cut off.
+    neighbor_hits: int = int(_env("NEIGHBOR_HITS", "1"))
     llm_model: str = _env("LLM_MODEL", "llama3.2")
     ollama_url: str = _env("OLLAMA_URL", "http://localhost:11434")
 
@@ -28,7 +35,7 @@ class Settings:
     cache_size: int = int(_env("CACHE_SIZE", "20"))
     history_turns: int = int(_env("HISTORY_TURNS", "3"))
 
-    llm_temperature: float = float(_env("LLM_TEMPERATURE", "0.2"))
+    llm_temperature: float = float(_env("LLM_TEMPERATURE", "0"))
     llm_num_ctx: int = int(_env("LLM_NUM_CTX", "4096"))
     llm_timeout_s: float = float(_env("LLM_TIMEOUT_S", "120"))
 

@@ -9,6 +9,7 @@ import faiss
 
 from .chunker import Chunk, chunk_text, count_tokens
 from .embedder import Embedder
+from .lexical import BM25
 
 
 @dataclass
@@ -18,6 +19,7 @@ class PageIndex:
     title: str
     chunks: list[Chunk]
     index: faiss.Index
+    bm25: BM25
     n_tokens: int
     index_ms: float
 
@@ -58,7 +60,8 @@ class IndexStore:
         chunks = chunk_text(text, self.chunk_tokens, self.chunk_overlap)
         if not chunks:
             raise ValueError("page has no readable text")
-        vecs = self.embedder.encode([self._embed_text(c, title) for c in chunks])
+        texts = [self._embed_text(c, title) for c in chunks]
+        vecs = self.embedder.encode(texts)
         index = faiss.IndexFlatIP(vecs.shape[1])
         index.add(vecs)
         page = PageIndex(
@@ -67,6 +70,7 @@ class IndexStore:
             title=title,
             chunks=chunks,
             index=index,
+            bm25=BM25(texts),
             n_tokens=count_tokens(text),
             index_ms=(time.perf_counter() - start) * 1000,
         )

@@ -1,0 +1,21 @@
+{
+  "dataset": "dataset_holdout",
+  "chunk_tokens": 300,
+  "overlap": 50,
+  "top_k": 5,
+  "reranker": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+  "hybrid_search": false,
+  "n_questions": 21,
+  "hit@1": 0.9048,
+  "hit@3": 0.9524,
+  "hit@5": 0.9524,
+  "mrr": 0.9286,
+  "avg_query_ms": 462.29,
+  "misses": [
+    {
+      "page": "mdn_using_fetch",
+      "question": "How do I make sure a response is JSON before parsing it?",
+      "rank": null
+    }
+  ]
+}
