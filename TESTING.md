@@ -93,12 +93,12 @@ If Alt+Shift+F does nothing, check chrome://extensions/shortcuts (another extens
 
 | # | Do this | Expect |
 |---|---|---|
-| 21 | Stop the backend (Ctrl+C in the `start.sh` terminal), then ask a question | "Can't reach the PageSense backend at http://localhost:8000. Start it with: …". The dot turns red within 30 s |
-| 22 | Start it again (`scripts/start.sh`) and ask | Works again. The dot goes green after the next answer or within 30 s |
+| 21 | Stop the backend (Ctrl+C in the `start.sh` terminal), then ask a question | "Can't reach the PageSense backend at http://localhost:8000…". Within 30 s the dot turns red and the panel switches to the **One-time setup** screen; "Show me how" opens the install page |
+| 22 | Start it again (`scripts/start.sh`) | The setup screen goes away by itself within 5 s and the chat is back |
 | 23 | Stop Ollama (`brew services stop ollama`), wait 30 s, open ⚙ | Amber dot, "Ollama isn't reachable. Start it with: ollama serve" |
 | 24 | Ask a question with Ollama stopped | "The language model isn't available. Make sure Ollama is running…" |
 | 25 | `brew services start ollama` and ask again | Works |
-| 26 | In ⚙ set the backend URL to `http://localhost:9999` and Save | Red dot. Questions show the "Can't reach" error. Set it back to `http://localhost:8000` |
+| 26 | In ⚙ set the backend URL to `http://localhost:9999` and Save | Red dot and the setup screen (⚙ stays available). Set it back to `http://localhost:8000` |
 | 27 | Restart the backend between two questions on the same page | The second question still works (the page is re-sent automatically) |
 | 28 | Ask a question, then navigate the tab to another site while it's answering | The answer finishes and is saved to the original page's chat. The panel switches to the new page |
 | 29 | After navigating away, scroll the panel back to an old answer and click its citation | Toast: "That answer was about a different page." |

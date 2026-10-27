@@ -94,6 +94,17 @@ button { font: inherit; cursor: pointer; }
 .find-match .lib-section { margin-bottom: 1px; }
 .find-match .snippet { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
+.setup { margin: auto 0; padding: 24px 20px; text-align: center; }
+.setup h2 { margin: 8px 0 6px; font-size: 17px; }
+.setup p { margin: 0 0 14px; }
+.setup .primary {
+  display: block; width: 100%; padding: 9px 12px; border: 0; border-radius: 8px;
+  background: var(--accent); color: var(--accent-fg); font-weight: 600;
+}
+.setup .link { margin: 8px 0 14px; border: 0; background: none; color: var(--accent); }
+.needs-setup #page-info, .needs-setup #chat, .needs-setup #ask-form, .needs-setup #find,
+.needs-setup #library, .needs-setup .actions > :not(#settings-btn) { display: none; }
+
 .page-info { padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .page-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 

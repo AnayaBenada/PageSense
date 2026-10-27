@@ -2,22 +2,41 @@
   "manifest_version": 3,
   "name": "PageSense",
   "version": "1.0.0",
-  "description": "Ask questions about the page you're reading. Answers come from the page itself via a local RAG pipeline.",
-  "permissions": ["sidePanel", "scripting", "storage", "tabs"],
-  "host_permissions": ["<all_urls>"],
-  "background": { "service_worker": "background.js" },
-  "side_panel": { "default_path": "sidepanel.html" },
+  "description": "Ask questions about the page you're reading and find passages by meaning. Private: the AI runs on your computer.",
+  "homepage_url": "https://anayabenada.github.io/PageSense/",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "action": {
     "default_title": "Open PageSense",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
   "commands": {
     "_execute_action": {
-      "suggested_key": { "default": "Alt+Shift+P" },
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
       "description": "Open PageSense"
     },
     "smart-find": {
-      "suggested_key": { "default": "Alt+Shift+F" },
+      "suggested_key": {
+        "default": "Alt+Shift+F"
+      },
       "description": "Smart Find on this page"
     }
   },
