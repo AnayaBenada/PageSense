@@ -67,7 +67,7 @@ async function api(path, body, { method = body ? "POST" : "GET", signal } = {}) 
       signal,
     });
   } catch (e) {
-    throw new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. Start it with:\nuvicorn app.main:app --port 8000`);
+    throw new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. If you installed PageSense, run the install command again to restart it; in a dev setup, run scripts/start.sh.`);
   }
   if (!res.ok) {
     let detail = {};

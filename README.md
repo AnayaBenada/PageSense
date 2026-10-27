@@ -23,7 +23,23 @@ Chrome side panel ──(page text)──▶ FastAPI ──▶ chunk (300 tok, 5
 - **Reading library**: ☆ saves a page to a local library (`~/.pagesense/library.db`). The ▤ view lists saved pages and searches passages across all of them; clicking a result opens the page and highlights the passage.
 - **Caching**: pages are indexed once per content hash, so asking again is instant; dynamic pages are re-read on every question so answers track what's on screen.
 
-## Setup
+## Install
+
+On macOS or Linux, paste this into Terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AnayaBenada/PageSense/main/install.sh | bash
+```
+
+It downloads PageSense to `~/PageSense`, installs [Ollama](https://ollama.com) and the LLaMA 3.2 model if needed, sets up the backend, and runs it in the background so it starts automatically at login. The first install downloads about 3 GB and takes 5–10 minutes. Then add the extension to Chrome (the installer prints these steps):
+
+1. Open `chrome://extensions` and turn on **Developer mode**.
+2. Click **Load unpacked** and select `~/PageSense/extension`.
+3. Pin PageSense, open any article, and press **Alt+Shift+P**.
+
+Run the same command again to update. `~/PageSense/uninstall.sh` stops the background service (`--all` also deletes your saved library). Options such as a smaller model for low-RAM machines (`PAGESENSE_LLM_MODEL=llama3.2:1b`) or a different port are listed at the top of [install.sh](install.sh). Backend logs are in `~/.pagesense/logs/backend.log`.
+
+## Manual setup (for development)
 
 Requirements: Python 3.10+, Chrome 116+, [Ollama](https://ollama.com), ~3 GB disk.
 
