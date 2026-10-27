@@ -1,0 +1,14 @@
+{
+  "dataset": "dataset",
+  "n_chunks": 2,
+  "rerank_chunks": true,
+  "reranker": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+  "n_questions": 49,
+  "hit@1": 0.5102,
+  "hit@3": 0.7143,
+  "hit@5": 0.7755,
+  "visible@1": 0.7551,
+  "median_top_score_answerable": 6.229,
+  "max_top_score_unanswerable": -3.6,
+  "avg_query_ms": 648.2
+}

@@ -14,6 +14,9 @@
       <span id="status-dot" class="dot" title="Checking backend…"></span>
     </div>
     <div class="actions">
+      <button id="find-btn" class="icon-btn" title="Smart Find (Alt+Shift+F)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20.5 20.5"/></svg></button>
+      <button id="save-page" class="icon-btn" title="Save to library">☆</button>
+      <button id="library-btn" class="icon-btn" title="My library">▤</button>
       <button id="reread" class="icon-btn" title="Re-read page">↻</button>
       <button id="clear" class="icon-btn" title="Clear chat">⌫</button>
       <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
@@ -29,10 +32,27 @@
     <p id="health-detail" class="muted small"></p>
   </section>
 
+  <section id="library" class="library" hidden>
+    <input id="library-query" type="search" placeholder="Search your saved pages…" spellcheck="false" maxlength="2000" />
+    <p id="library-meta" class="muted small"></p>
+    <div id="library-list" class="library-list"></div>
+  </section>
+
   <div id="page-info" class="page-info">
     <div id="page-title" class="page-title">—</div>
     <div id="page-meta" class="muted small"></div>
   </div>
+
+  <section id="find" class="find" hidden>
+    <div class="find-row">
+      <input id="find-query" type="search" placeholder="Find by meaning, e.g. refund policy" spellcheck="false" maxlength="2000" />
+      <span id="find-count" class="muted small"></span>
+      <button id="find-prev" class="icon-btn" title="Previous match (Shift+Enter)">↑</button>
+      <button id="find-next" class="icon-btn" title="Next match (Enter)">↓</button>
+      <button id="find-close" class="icon-btn" title="Close (Esc)">×</button>
+    </div>
+    <div id="find-results" class="find-results"></div>
+  </section>
 
   <main id="chat" class="chat" aria-live="polite">
     <div id="empty" class="empty">

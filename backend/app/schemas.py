@@ -50,3 +50,63 @@ class AskResponse(BaseModel):
     answer: str
     sources: list[Source]
     timings: Timings
+
+
+class FindRequest(BaseModel):
+    query: str
+    page_id: str | None = None
+    # Alternative to page_id: send the page and index it inline.
+    url: str | None = None
+    title: str = ""
+    text: str | None = None
+    top_k: int | None = Field(None, ge=1, le=20)
+
+
+class FindMatch(BaseModel):
+    text: str
+    then: str  # the line after `text` when `text` introduces it, else ""
+    heading: str
+    chunk_id: int
+    score: float
+
+
+class FindResponse(BaseModel):
+    page_id: str
+    matches: list[FindMatch]
+    find_ms: float
+
+
+class SaveRequest(BaseModel):
+    page_id: str
+
+
+class SavedPageOut(BaseModel):
+    id: int
+    url: str
+    title: str
+    page_id: str
+    saved_at: float
+    n_chunks: int
+    n_tokens: int
+
+
+class LibraryPagesResponse(BaseModel):
+    pages: list[SavedPageOut]
+
+
+class LibrarySearchRequest(BaseModel):
+    query: str
+    top_k: int | None = Field(None, ge=1, le=20)
+
+
+class LibraryResult(BaseModel):
+    page: SavedPageOut
+    chunk_id: int
+    heading: str
+    text: str
+    score: float
+
+
+class LibrarySearchResponse(BaseModel):
+    results: list[LibraryResult]
+    search_ms: float

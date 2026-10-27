@@ -17,6 +17,7 @@ class PageIndex:
     page_id: str
     url: str
     title: str
+    text: str
     chunks: list[Chunk]
     index: faiss.Index
     bm25: BM25
@@ -60,7 +61,7 @@ class IndexStore:
         chunks = chunk_text(text, self.chunk_tokens, self.chunk_overlap)
         if not chunks:
             raise ValueError("page has no readable text")
-        texts = [self._embed_text(c, title) for c in chunks]
+        texts = [self.embed_text(c, title) for c in chunks]
         vecs = self.embedder.encode(texts)
         index = faiss.IndexFlatIP(vecs.shape[1])
         index.add(vecs)
@@ -68,6 +69,7 @@ class IndexStore:
             page_id=pid,
             url=url,
             title=title,
+            text=text,
             chunks=chunks,
             index=index,
             bm25=BM25(texts),
@@ -91,7 +93,7 @@ class IndexStore:
         ]
 
     @staticmethod
-    def _embed_text(chunk: Chunk, title: str) -> str:
+    def embed_text(chunk: Chunk, title: str) -> str:
         # Prefixing the heading gives short chunks enough context to be found.
         prefix = " > ".join(x for x in (title, chunk.heading) if x)
         return f"{prefix}\n{chunk.text}" if prefix else chunk.text

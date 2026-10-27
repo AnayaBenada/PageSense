@@ -34,6 +34,14 @@ class Settings:
     max_question_chars: int = int(_env("MAX_QUESTION_CHARS", "2000"))
     cache_size: int = int(_env("CACHE_SIZE", "20"))
     history_turns: int = int(_env("HISTORY_TURNS", "3"))
+    # Smart Find splits this many of the best chunks into sentences and scores each.
+    find_chunks: int = int(_env("FIND_CHUNKS", "2"))
+    find_rerank_chunks: bool = _env("FIND_RERANK_CHUNKS", "1") not in ("0", "false", "")
+    find_top_k: int = int(_env("FIND_TOP_K", "5"))
+    # Matches scoring below this (cross-encoder logit) aren't shown.
+    find_min_score: float = float(_env("FIND_MIN_SCORE", "-2"))
+    # Saved pages ("My library"). Created on first start; ":memory:" keeps it in RAM.
+    library_path: str = _env("LIBRARY_PATH", os.path.expanduser("~/.pagesense/library.db"))
 
     llm_temperature: float = float(_env("LLM_TEMPERATURE", "0"))
     llm_num_ctx: int = int(_env("LLM_NUM_CTX", "4096"))
