@@ -50,6 +50,33 @@ Open the panel with the toolbar icon or **Alt+Shift+P**. The dot next to "PageSe
 | 12 | Switch macOS to dark mode | The panel follows the dark theme |
 | 13 | Press Shift+Enter in the box | Inserts a new line. Enter sends |
 
+### Library
+
+| # | Do this | Expect |
+|---|---|---|
+| 14 | On a docs page, click ☆ | It turns into a filled ★ and "Saved to your library." appears |
+| 15 | Save two or three more pages, then click ▤ | The chat is replaced by the library: saved pages, newest first, with site and date |
+| 16 | Type a question in the library search box | After a moment, passages from the matching pages, each with page title, section and site |
+| 17 | Click a result for a page that isn't open | It opens in a new tab and the passage is highlighted. For a page that's already open, that tab is focused instead |
+| 18 | Click × on a saved page | It disappears from the list. If it's the current page, the ★ goes back to ☆ |
+| 19 | Click ★ on a saved page | "Removed from your library." and the star empties |
+| 20 | Restart the backend, then open ▤ | Saved pages are still there |
+| 21 | Click ▤ again (or Esc in an empty search box) | Back to the chat |
+
+### Smart Find
+
+| # | Do this | Expect |
+|---|---|---|
+| 22 | On https://docs.python.org/3/tutorial/datastructures.html press **Alt+Shift+F** (or click the magnifier, or Cmd/Ctrl+F inside the panel) | The find bar opens with the cursor in it. If the panel was closed, it opens first |
+| 23 | Type "remove all items from a list" | After a moment: "1 of 5", the matches listed with their section, and "Remove all items from the list." highlighted yellow on the page (it stays until you close the bar) |
+| 24 | Press Enter, then Shift+Enter (or ↓ / ↑) | Moves to the next / previous match on the page; the list marks the current one |
+| 25 | Click a match in the list | Jumps to that one |
+| 26 | Type something the page doesn't cover, e.g. "how to bake bread" | "No match" and a hint; the old highlight is cleared |
+| 27 | Search "create a branch and switch to it" on https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging | The lead-in sentence is highlighted together with the command after it (`git checkout -b iss53`) |
+| 28 | Press Esc | The bar closes and the highlight disappears |
+
+If Alt+Shift+F does nothing, check chrome://extensions/shortcuts (another extension may already use it).
+
 ### Pages it can't read
 
 | # | Do this | Expect |
@@ -90,6 +117,8 @@ Open the panel with the toolbar icon or **Alt+Shift+P**. The dot next to "PageSe
 ```bash
 cd ~/PageSense/backend
 .venv/bin/python -m eval.eval_retrieval     # retrieval accuracy
+.venv/bin/python -m eval.eval_library       # same questions, searched across all pages saved in one library
+.venv/bin/python -m eval.eval_find          # Smart Find: does the highlighted sentence contain the answer?
 .venv/bin/python -m eval.bench_latency      # retrieval latency vs page size
 .venv/bin/python -m eval.eval_answers       # 55 questions end to end (~6 min); then grade answers.csv
 ```

@@ -1,5 +1,7 @@
 // PageSense side panel: extracts the active tab's text, indexes it on the
-// backend, and streams grounded answers with clickable sources.
+// backend, and streams grounded answers with clickable sources. Smart Find jumps
+// to the sentences that match what you mean; pages can be saved to a local
+// library and searched across later.
 const DEFAULT_BACKEND = "http://localhost:8000";
 const HISTORY_TURNS = 3;
 const RESTRICTED = /^(chrome|chrome-extension|chrome-search|chrome-untrusted|devtools|edge|about|view-source|data|javascript):/i;
@@ -13,12 +15,19 @@ const state = {
   tab: null, // { id, url, title }
   page: null, // { url, page_id, n_chunks, n_tokens }
   busy: false,
+  saved: null, // library entry for the current tab's URL, if saved
+  libraryOpen: false,
+  find: null, // { query, matches, i, tabId } for the open Smart Find
   fileAccess: false, // "Allow access to file URLs" toggle in chrome://extensions
 };
 
 // ---------- utilities ----------
 
 class UserFacingError extends Error {}
+
+function sameUrl(a, b) {
+  return a.split("#")[0] === b.split("#")[0];
+}
 
 function chatKey(url) {
   return `chat:${url.split("#")[0]}`;
@@ -48,17 +57,17 @@ function restrictedReason(url) {
   return null;
 }
 
-async function api(path, body, signal) {
+async function api(path, body, { method = body ? "POST" : "GET", signal } = {}) {
   let res;
   try {
     res = await fetch(state.backend + path, {
-      method: body ? "POST" : "GET",
+      method,
       headers: body ? { "Content-Type": "application/json" } : {},
       body: body ? JSON.stringify(body) : undefined,
       signal,
     });
   } catch (e) {
-    throw new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. Start it with:\nuvicorn app.main:app --port 8000`);
+    throw new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. If you installed PageSense, run the install command again to restart it; in a dev setup, run scripts/start.sh.`);
   }
   if (!res.ok) {
     let detail = {};
@@ -108,8 +117,9 @@ async function indexActivePage() {
   return state.page;
 }
 
-// Highlights the best-matching text of a source chunk in the page and scrolls to it.
-function highlightInPage(snippets) {
+// Highlights the given snippets in the page and scrolls to the first. Unless
+// persist is set, the highlight fades after 8 s.
+function highlightInPage(snippets, persist = false) {
   const STYLE_ID = "pagesense-highlight-style";
   if (!document.getElementById(STYLE_ID)) {
     const style = document.createElement("style");
@@ -159,11 +169,16 @@ function highlightInPage(snippets) {
   if (window.CSS && CSS.highlights) {
     CSS.highlights.set("pagesense", new Highlight(...ranges.map((r) => r.range)));
     clearTimeout(window.__pagesenseTimer);
-    window.__pagesenseTimer = setTimeout(() => CSS.highlights.delete("pagesense"), 8000);
+    if (!persist) window.__pagesenseTimer = setTimeout(() => CSS.highlights.delete("pagesense"), 8000);
   }
   const el = ranges[0].range.startContainer.parentElement;
   el?.scrollIntoView({ behavior: "smooth", block: "center" });
   return true;
+}
+
+function clearPageHighlight() {
+  clearTimeout(window.__pagesenseTimer);
+  window.CSS?.highlights?.delete("pagesense");
 }
 
 function snippetsFor(chunkText) {
@@ -189,19 +204,27 @@ function snippetsFor(chunkText) {
   return out;
 }
 
+async function highlightSnippets(tabId, snippets, persist = false) {
+  const [{ result }] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: highlightInPage,
+    args: [snippets, persist],
+  });
+  return result;
+}
+
+function highlightSource(tabId, text) {
+  return highlightSnippets(tabId, snippetsFor(text));
+}
+
 async function showSource(source, pageUrl) {
   const tab = await getActiveTab();
-  if (!tab || tab.url.split("#")[0] !== pageUrl.split("#")[0]) {
+  if (!tab || !sameUrl(tab.url, pageUrl)) {
     toast("That answer was about a different page.");
     return;
   }
   try {
-    const [{ result }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: highlightInPage,
-      args: [snippetsFor(source.text)],
-    });
-    if (!result) toast("Couldn't locate that passage on the page (it may have changed).");
+    if (!(await highlightSource(tab.id, source.text))) toast("Couldn't locate that passage on the page (it may have changed).");
   } catch (e) {
     toast(`Couldn't highlight: ${e.message}`);
   }
@@ -217,7 +240,7 @@ function renderPageInfo() {
   const meta = $("page-meta");
   if (reason) {
     meta.textContent = reason;
-  } else if (state.page && tab && state.page.url.split("#")[0] === tab.url.split("#")[0]) {
+  } else if (state.page && tab && sameUrl(state.page.url, tab.url)) {
     meta.textContent = `~${state.page.n_tokens.toLocaleString()} tokens · ${state.page.n_chunks} chunks indexed`;
   } else {
     meta.textContent = "Not read yet. It'll be read when you ask a question.";
@@ -431,6 +454,280 @@ async function ask(question) {
   }
 }
 
+// ---------- smart find ----------
+
+let findRun = 0;
+let findTimer;
+
+function findSnippets(m) {
+  // Each piece whole, plus its start in case inline markup splits the text oddly.
+  return [m.text, m.then].filter(Boolean).flatMap((t) => (t.length > 60 ? [t, t.slice(0, 50)] : [t]));
+}
+
+function openFind() {
+  if (state.libraryOpen) toggleLibrary(false);
+  $("find").hidden = false;
+  $("find-btn").classList.add("on");
+  $("find-query").focus();
+  $("find-query").select();
+}
+
+function closeFind() {
+  clearTimeout(findTimer);
+  findRun++;
+  $("find").hidden = true;
+  $("find-btn").classList.remove("on");
+  resetFind();
+}
+
+function resetFind(message = "") {
+  const tabId = state.find?.tabId;
+  if (tabId != null) chrome.scripting.executeScript({ target: { tabId }, func: clearPageHighlight }).catch(() => {});
+  state.find = null;
+  $("find-count").textContent = message;
+  $("find-results").replaceChildren();
+}
+
+async function runFind() {
+  clearTimeout(findTimer);
+  const run = ++findRun;
+  const query = $("find-query").value.trim();
+  if (!query) return resetFind();
+  const reason = restrictedReason(state.tab?.url);
+  if (reason) {
+    resetFind();
+    return toast(reason);
+  }
+  $("find-count").textContent = "…";
+  try {
+    // Re-read each time so matches track what's on screen; unchanged pages are cached.
+    let page = await indexActivePage();
+    let res;
+    try {
+      res = await api("/find", { page_id: page.page_id, query });
+    } catch (e) {
+      if (e.code !== "page_not_indexed") throw e;
+      page = await indexActivePage();
+      res = await api("/find", { page_id: page.page_id, query });
+    }
+    const { matches } = await res.json();
+    if (run !== findRun) return; // a newer search started
+    if (!matches.length) {
+      resetFind("No match");
+      const p = document.createElement("p");
+      p.className = "muted small";
+      p.textContent = "Nothing on this page matches that. Try other words, or ask a question below.";
+      $("find-results").append(p);
+      return;
+    }
+    state.find = { query, matches, i: 0, tabId: state.tab.id };
+    await showMatch(0);
+  } catch (e) {
+    if (run !== findRun) return;
+    resetFind();
+    toast(e.message);
+  }
+}
+
+function renderFind() {
+  const f = state.find;
+  $("find-count").textContent = `${f.i + 1} of ${f.matches.length}`;
+  $("find-results").replaceChildren(
+    ...f.matches.map((m, i) => {
+      const b = document.createElement("button");
+      b.className = `find-match${i === f.i ? " on" : ""}`;
+      const section = m.heading.split(" > ").pop();
+      b.innerHTML = `${section && section !== m.text ? `<div class="lib-section">${md.escape(section)}</div>` : ""}
+        <div class="snippet">${md.escape(m.then ? `${m.text} ${m.then}` : m.text)}</div>`;
+      b.addEventListener("click", () => showMatch(i));
+      return b;
+    })
+  );
+  $("find-results").children[f.i]?.scrollIntoView({ block: "nearest" });
+}
+
+async function showMatch(i) {
+  const f = state.find;
+  if (!f) return;
+  f.i = (i + f.matches.length) % f.matches.length;
+  renderFind();
+  try {
+    if (!(await highlightSnippets(f.tabId, findSnippets(f.matches[f.i]), true))) {
+      toast("Couldn't locate that sentence on the page (it may have changed).");
+    }
+  } catch (e) {
+    toast(`Couldn't highlight: ${e.message}`);
+  }
+}
+
+// ---------- library ----------
+
+function renderSaveButton() {
+  const b = $("save-page");
+  b.disabled = !!restrictedReason(state.tab?.url);
+  b.textContent = state.saved ? "★" : "☆";
+  b.title = state.saved ? "Saved to your library. Click to remove it." : "Save to library";
+  b.classList.toggle("on", !!state.saved);
+}
+
+async function refreshSaved() {
+  const url = state.tab?.url;
+  state.saved = null;
+  renderSaveButton();
+  if (!url || restrictedReason(url)) return;
+  try {
+    const { pages } = await (await api(`/library/pages?url=${encodeURIComponent(url)}`)).json();
+    if (state.tab?.url !== url) return; // tab changed while waiting
+    state.saved = pages[0] || null;
+    renderSaveButton();
+  } catch {} // backend offline: the health dot already says so
+}
+
+async function toggleSave() {
+  const b = $("save-page");
+  b.disabled = true;
+  try {
+    if (state.saved) {
+      await api(`/library/pages/${state.saved.id}`, null, { method: "DELETE" });
+      state.saved = null;
+      toast("Removed from your library.");
+    } else {
+      // Re-read so the saved copy matches what's on screen; unchanged pages are cached.
+      const page = await indexActivePage();
+      state.saved = await (await api("/library/pages", { page_id: page.page_id })).json();
+      toast("Saved to your library.");
+    }
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    renderSaveButton();
+    if (state.libraryOpen) renderLibrary();
+  }
+}
+
+function toggleLibrary(open = !state.libraryOpen) {
+  if (open && !$("find").hidden) closeFind();
+  state.libraryOpen = open;
+  $("library").hidden = !open;
+  for (const id of ["page-info", "chat", "ask-form"]) $(id).hidden = open;
+  $("library-btn").classList.toggle("on", open);
+  if (open) {
+    renderLibrary();
+    $("library-query").focus();
+  }
+}
+
+function siteOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+function pageCard(p) {
+  const el = document.createElement("div");
+  el.className = "lib-page";
+  const date = new Date(p.saved_at * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  el.innerHTML = `<button class="open" title="${md.escape(p.url)}"><div class="lib-title">${md.escape(p.title || p.url)}</div>
+    <div class="muted small">${md.escape(siteOf(p.url))} · saved ${date}</div></button>
+    <button class="icon-btn remove" title="Remove from library">×</button>`;
+  el.querySelector(".open").addEventListener("click", () => openSaved(p.url));
+  el.querySelector(".remove").addEventListener("click", async () => {
+    try {
+      await api(`/library/pages/${p.id}`, null, { method: "DELETE" });
+      if (state.saved?.id === p.id) {
+        state.saved = null;
+        renderSaveButton();
+      }
+      renderLibrary();
+    } catch (e) {
+      toast(e.message);
+    }
+  });
+  return el;
+}
+
+function resultCard(r) {
+  const b = document.createElement("button");
+  b.className = "source";
+  b.title = `Open ${r.page.url}`;
+  // Headings are a "Page > Section > Subsection" path; the innermost one is enough.
+  const section = r.heading.split(" > ").pop();
+  b.innerHTML = `<div class="head"><span>${md.escape(r.page.title || r.page.url)}</span><span>${md.escape(siteOf(r.page.url))}</span></div>
+    ${section && section !== r.page.title ? `<div class="lib-section">${md.escape(section)}</div>` : ""}
+    <div class="snippet">${md.escape(displaySnippet(r.text))}</div>`;
+  b.addEventListener("click", () => openSaved(r.page.url, r.text));
+  return b;
+}
+
+let libraryRun = 0;
+async function renderLibrary() {
+  const run = ++libraryRun;
+  const q = $("library-query").value.trim();
+  const meta = $("library-meta");
+  const list = $("library-list");
+  try {
+    if (!q) {
+      const { pages } = await (await api("/library/pages")).json();
+      if (run !== libraryRun) return;
+      meta.textContent = pages.length
+        ? `${pages.length} saved page${pages.length > 1 ? "s" : ""}`
+        : "Nothing saved yet. Click ☆ on any page to add it to your library.";
+      list.replaceChildren(...pages.map(pageCard));
+    } else {
+      const { results, search_ms } = await (await api("/library/search", { query: q })).json();
+      if (run !== libraryRun) return;
+      meta.textContent = results.length
+        ? `${results.length} passage${results.length > 1 ? "s" : ""} · ${(search_ms / 1000).toFixed(2)}s`
+        : "No matching passages in your library.";
+      list.replaceChildren(...results.map(resultCard));
+    }
+  } catch (e) {
+    if (run !== libraryRun) return;
+    meta.textContent = e.message;
+    list.replaceChildren();
+  }
+}
+
+function waitForLoad(tabId, timeoutMs = 15000) {
+  return new Promise((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      resolve();
+    };
+    const onUpdated = (id, info) => id === tabId && info.status === "complete" && done();
+    const timer = setTimeout(done, timeoutMs);
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    chrome.tabs.get(tabId).then((t) => t.status === "complete" && done(), done);
+  });
+}
+
+// Switches to (or opens) a saved page and, given a passage, highlights it there.
+async function openSaved(url, text) {
+  try {
+    let tab = (await chrome.tabs.query({})).find((t) => t.url && sameUrl(t.url, url));
+    if (tab) {
+      await chrome.tabs.update(tab.id, { active: true });
+      await chrome.windows.update(tab.windowId, { focused: true });
+    } else {
+      tab = await chrome.tabs.create({ url });
+    }
+    if (!text) return;
+    await waitForLoad(tab.id);
+    let found = await highlightSource(tab.id, text);
+    if (!found) {
+      // Pages that render after "complete" get a second try.
+      await new Promise((r) => setTimeout(r, 1500));
+      found = await highlightSource(tab.id, text);
+    }
+    if (!found) toast("Couldn't find that passage on the page. It may have changed since you saved it.");
+  } catch (e) {
+    toast(`Couldn't open that page: ${e.message}`);
+  }
+}
+
 // ---------- health & settings ----------
 
 async function checkHealth() {
@@ -472,6 +769,8 @@ async function syncTab() {
   state.tab = tab;
   if (changed) {
     state.page = null;
+    if (state.find) resetFind(); // matches were for the old page; Enter searches again
+    refreshSaved();
     await renderChat();
   }
   renderPageInfo();
@@ -505,6 +804,51 @@ $("ask-form").addEventListener("submit", (e) => {
   ask(q);
 });
 document.querySelectorAll(".suggestion").forEach((b) => b.addEventListener("click", () => ask(b.textContent)));
+
+$("find-btn").addEventListener("click", () => ($("find").hidden ? openFind() : closeFind()));
+$("find-close").addEventListener("click", closeFind);
+$("find-next").addEventListener("click", () => (state.find ? showMatch(state.find.i + 1) : runFind()));
+$("find-prev").addEventListener("click", () => state.find && showMatch(state.find.i - 1));
+$("find-query").addEventListener("input", () => {
+  clearTimeout(findTimer);
+  findTimer = setTimeout(runFind, 400);
+});
+$("find-query").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    if (state.find && state.find.query === e.target.value.trim()) showMatch(state.find.i + (e.shiftKey ? -1 : 1));
+    else runFind();
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    closeFind();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+    e.preventDefault();
+    openFind();
+  }
+});
+// Alt+Shift+F (see background.js) sets this flag, whether or not the panel was open.
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "session" && changes.openFind?.newValue) openFind();
+});
+
+$("save-page").addEventListener("click", toggleSave);
+$("library-btn").addEventListener("click", () => toggleLibrary());
+let libraryTimer;
+$("library-query").addEventListener("input", () => {
+  clearTimeout(libraryTimer);
+  libraryTimer = setTimeout(renderLibrary, 300);
+});
+$("library-query").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    clearTimeout(libraryTimer);
+    renderLibrary();
+  } else if (e.key === "Escape" && !e.target.value) {
+    toggleLibrary(false);
+  }
+});
 
 $("reread").addEventListener("click", async () => {
   if (state.busy) return;
@@ -540,6 +884,10 @@ $("save-settings").addEventListener("click", async () => {
     state.fileAccess = await chrome.extension.isAllowedFileSchemeAccess();
   } catch {}
   await syncTab();
+  try {
+    const { openFind: requestedAt } = await chrome.storage.session.get("openFind");
+    if (requestedAt && Date.now() - requestedAt < 5000) openFind();
+  } catch {}
   checkHealth();
   setInterval(checkHealth, 30000);
 })();

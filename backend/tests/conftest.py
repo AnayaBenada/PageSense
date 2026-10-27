@@ -1,5 +1,10 @@
 import hashlib
+import os
 import re
+import tempfile
+
+# Settings() defaults are read at import time; keep tests out of ~/.pagesense.
+os.environ.setdefault("PAGESENSE_LIBRARY_PATH", os.path.join(tempfile.mkdtemp(), "library.db"))
 
 import numpy as np
 import pytest
@@ -51,8 +56,11 @@ def fake_llm():
 
 
 @pytest.fixture
-def client(fake_llm):
-    cfg = Settings(chunk_tokens=60, chunk_overlap=10, top_k=3, cache_size=3, max_text_chars=50_000)
+def client(fake_llm, tmp_path):
+    cfg = Settings(
+        chunk_tokens=60, chunk_overlap=10, top_k=3, cache_size=3, max_text_chars=50_000,
+        library_path=str(tmp_path / "library.db"),
+    )
     app = create_app(cfg, embedder=FakeEmbedder(), llm=fake_llm)
     with TestClient(app) as c:
         yield c

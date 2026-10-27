@@ -1,0 +1,234 @@
+id,page,question,reference_answer,answer,answerable,refused,citations_valid,n_sources,retrieve_ms,generate_ms,grade,notes
+1,fastapi_first_steps,"Which HTTP methods are normally used to create, read, update and delete data?","POST to create, GET to read, PUT to update, DELETE to delete","According to the page excerpts, the HTTP methods that are normally used to create, read, update, and delete data are:
+
+* POST: to create data
+* GET: to read data
+* PUT: to update data
+* DELETE: to delete data
+
+These are mentioned in section [4] (section: First Steps > Recap, step by step > Step 3: create a path operation > Operation) as the normal HTTP methods used for these actions.",True,False,True,6,624.72,9200.83,2,graded by Claude
+2,fastapi_first_steps,"Besides powering the docs, what else can the OpenAPI schema be used for?","Generating client code automatically, e.g. for frontend, mobile or IoT apps (and plugging in alternative docs systems)","According to the page excerpts, besides powering the docs, the OpenAPI schema can be used for:
+
+* Generating code automatically, for clients that communicate with your API. For example, frontend, mobile or IoT applications. [3]
+* Configuring the app entrypoint in pyproject.toml. [4]
+* Providing a JSON schema for the data sent and received by your API using JSON Schema, the standard for JSON data schemas. [2]
+* Generating a raw OpenAPI schema, which can be seen at: http://127.0.0.1:8000/openapi.json. [2]",True,False,True,6,1138.05,8819.77,1,graded by Claude: Adds wrong uses (configuring the entrypoint)
+3,fastapi_first_steps,Why is the pyproject.toml entrypoint recommended over passing --entrypoint to fastapi dev?,"Otherwise you must pass the right entrypoint every time, and other tools like the VS Code extension or FastAPI Cloud might not find it","According to the page excerpts, the pyproject.toml entrypoint is recommended over passing --entrypoint to fastapi dev for several reasons:
+
+* The page states that ""other tools might not be able to find it, for example the VS Code Extension or FastAPI Cloud, so it is recommended to use the entrypoint in pyproject.toml."" [3]
+* It is also mentioned that ""But you would have to remember to pass the correct path\entrypoint every time you call the fastapi command."" [3]
+* The page recommends using the entrypoint in pyproject.toml to ensure that the correct app object is used, as it ""will guess the FastAPI app object to use"" [3].
+* Additionally, the page states that ""it is recommended to use the entrypoint in pyproject.toml"" to avoid potential issues with other tools not being able to find the app object. [4]
+
+Overall, the page suggests that using the pyproject.toml entrypoint provides more consistency and reliability than passing the --entrypoint option to fastapi dev.",True,False,True,5,1433.59,11403.11,2,graded by Claude
+4,fastapi_first_steps,How do I add authentication with OAuth2 to my FastAPI app?,(not on page),I couldn't find that on this page.,False,True,,5,1295.05,4328.66,,
+5,git_branching_merging,Why did merging iss53 into master need a three-way merge?,"History had diverged: the current commit isn't a direct ancestor of the merged branch, so Git merges using the two branch tips and their common ancestor","According to the page, merging iss53 into master needed a three-way merge because the commit on the branch you're on (iss53) isn't a direct ancestor of the branch you're merging in (master) [3]. This is stated in the following excerpt:
+
+""In this case, Git does a simple three-way merge, using the two snapshots pointed to by the branch tips and the common ancestor of the two."" [3]
+
+Additionally, the page explains that the three-way merge is necessary because the development history has diverged from some older point [3]. This is stated in the following excerpt:
+
+""In this case, Git does a simple three-way merge, using the two snapshots pointed to by the branch tips and the common ancestor of the two."" [3]
+
+The page also mentions that the merge commit is special because it has more than one parent [3]. This is stated in the following excerpt:
+
+""A merge commit, and is special in that it has more than one parent."" [3]",True,False,True,5,1266.66,12144.39,1,graded by Claude: Swaps the branches: says you're on iss53 merging master
+6,git_branching_merging,What makes a merge commit special?,It has more than one parent,"According to the page, a merge commit is special because it has more than one parent [3]. This is stated in the following excerpt:
+
+""Instead of just moving the branch pointer forward, Git creates a new snapshot that results from this three-way merge and automatically creates a new commit that points to it. This is referred to as a merge commit, and is special in that it has more than one parent.""
+
+Additionally, the page mentions that a merge commit is created when the commit on the branch you're on isn't a direct ancestor of the branch you're merging in [3]. This implies that a merge commit is special because it is created when the two branches have diverged, and it has multiple parents.",True,False,True,6,1289.15,13043.15,2,graded by Claude
+7,git_branching_merging,"After a conflict, how can I see which files are still unmerged?","Run git status; conflicted files are listed as unmerged (""both modified"")","According to the page, after a conflict, you can see which files are still unmerged by running `git status`. Specifically, the page states:
+
+```
+$ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run ""git commit"")
+
+Unmerged paths:
+  (use ""git add <file>..."" to mark resolution)
+
+    both modified:      index.html
+
+no changes added to commit (use ""git add"" and/or ""git commit -a"")
+```
+
+This indicates that the file `index.html` has both local and remote modifications, and that it is marked as unmerged.",True,False,,5,1441.03,12503.21,2,graded by Claude
+8,git_branching_merging,How do I push a branch to a remote repository?,(not on page),"To push a branch to a remote repository, you need to switch to the branch, commit any changes, and then push the branch to the remote repository.
+
+First, switch to the branch:
+
+```
+$ git checkout -b iss53
+```
+
+[1]
+
+Next, commit any changes:
+
+```
+$ vim index.html
+$ git commit -a -m 'Create new footer [issue 53]'
+```
+
+[1]
+
+Finally, push the branch to the remote repository:
+
+```
+$ git push origin iss53
+```
+
+[1]
+
+Note that the page does not provide a specific command for pushing a branch to a remote repository. However, it does provide an example of how to create a new branch and push it to a remote repository:
+
+```
+$ git checkout -b iss53
+$ git push origin iss53
+```
+
+[1]
+
+Alternatively, you can also use the `git push` command with the `-u` option to set the upstream tracking information:
+
+```
+$ git push -u origin iss53
+```
+
+[1]
+
+Note that the page does not provide information on how to set the upstream tracking information. However, it does provide an example of how to create a new branch and push it to a remote repository:
+
+```
+$ git checkout -b iss53
+$ git push origin iss53
+```
+
+[1]",False,False,True,6,1729.47,21102.09,,
+9,mdn_using_fetch,What values can the credentials option take?,"omit, same-origin (the default) and include","According to the page excerpts, the credentials option can take one of the following three values:
+
+* omit: never send credentials in the request or include credentials in the response.
+* same-origin (the default): only send and include credentials for same-origin requests.
+* include: always include credentials, even cross-origin.
+
+This is stated in section [3] of the page, which says: ""The credentials option can take one of the following three values: omit, same-origin (the default), or include.""",True,False,True,4,848.02,10938.82,2,graded by Claude
+10,mdn_using_fetch,What must the server send back for a cross-origin request with credentials included?,"Access-Control-Allow-Credentials, plus Access-Control-Allow-Origin naming the client's origin explicitly (* is not allowed)","According to the page, for a cross-origin request with credentials included, the server must send back the following headers:
+
+* `Access-Control-Allow-Credentials` header, which indicates that credentials are allowed to be sent with the request.
+* `Access-Control-Allow-Origin` response header, which specifies the origin that is allowed to access the response. Note that the page states that the server must explicitly specify the client's origin in this header, and that `*` is not allowed.
+
+Additionally, the page states that if the request is a simple request, the request will be sent with credentials, but the server must set the correct headers, or the browser will return a network error to the caller. If the server does set the correct headers, then the response, including credentials, will be delivered to the caller.
+
+It's also worth noting that if the request is not a simple request, the browser will send a preflighted request without credentials, and the server must set the correct headers, or the browser will return a network error to the caller. If the server does set the correct headers, then the browser will follow up with the real request, including credentials, and will deliver the real response, including credentials, to the caller.",True,False,,5,2468.85,11864.34,2,graded by Claude
+11,mdn_using_fetch,How do I make sure a response is JSON before parsing it?,"Check response.headers.get(""content-type"") includes application/json, and throw otherwise","According to the page, to make sure a response is JSON before parsing it, you can check the response status and throw an exception if it's not OK, and then catch the exception and throw a new TypeError with a message indicating that the response is not JSON.
+
+Here's the code snippet that demonstrates this:
+
+```javascript
+try {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.status}`);
+  }
+  const json = await response.json();
+  console.log(json);
+} catch (error) {
+  if (error instanceof TypeError) {
+    throw new TypeError(""Oops, we haven't got JSON!"");
+  }
+  console.error(""Error:"", error);
+}
+```
+
+This code checks the response status and throws an exception if it's not OK. It then catches the exception and checks if it's a TypeError. If it is, it throws a new TypeError with a message indicating that the response is not JSON. If it's not a TypeError, it logs the error to the console.",True,False,,6,1782.29,15796.57,0,graded by Claude: Wrong method: no content-type check
+12,mdn_using_fetch,What does the response type opaqueredirect mean?,The request set the redirect option to manual and the server returned a redirect status,"According to the page, the response type ""opaqueredirect"" means that the request set the redirect option to manual, and the server returned a redirect status [3].",True,False,True,6,1617.29,31691.03,2,graded by Claude
+13,python_datastructures,What can and can't be used as a dictionary key?,"Any immutable type: strings and numbers always; tuples only if they contain only strings, numbers or tuples; lists can't be keys","According to the page, the following can be used as dictionary keys:
+
+* Immutable types (as stated in [2])
+* Strings (as stated in [2])
+* Numbers (as stated in [2])
+* Tuples that contain only strings, numbers, or tuples (as stated in [2])
+
+On the other hand, the following cannot be used as dictionary keys:
+
+* Lists (as stated in [2])
+* Mutable objects (either directly or indirectly) in tuples (as stated in [2])",True,False,True,5,2699.37,12212.35,2,graded by Claude
+14,python_datastructures,How do I avoid a KeyError when looking up a key that might not exist?,"Use the get() method, which returns None or a given default if the key is missing","To avoid a KeyError when looking up a key that might not exist, you can use the `get()` method instead of subscripting (d[key]) [4]. The `get()` method returns `None` (or a specified default value) if the key is not in the dictionary.
+
+Here is an example:
+```
+tel = {'jack': 4098, 'sape': 4139}
+print(tel.get('irv'))  # prints None
+```
+Alternatively, you can use the `in` keyword to check if a key exists in the dictionary before trying to look it up [5]. However, this approach does not provide a default value if the key is not found, so it is not as convenient as using `get()`.",True,True,True,6,2102.62,27258.19,2,graded by Claude
+15,python_datastructures,How do I loop over the unique items of a list in sorted order?,for f in sorted(set(basket)),"To loop over the unique items of a list in sorted order, you can use the `sorted()` function in combination with the `set()` function on the list. Here's how:
+
+```
+>>> basket = ['apple', 'orange', 'apple', 'pear', 'orange', 'banana']
+>>> for f in sorted(set(basket)):
+...     print(f)
+...
+apple
+banana
+orange
+pear
+```
+
+This works by first removing duplicate elements from the list using `set()`, and then sorting the resulting set in ascending order using `sorted()`. The `for` loop then iterates over the sorted set, printing each unique item in the original list.",True,False,,6,17874.22,43341.08,2,graded by Claude
+16,python_datastructures,What does an expression like `a or b or c` return when it's not used as a boolean?,"The last evaluated argument (short-circuit), e.g. the first truthy string","According to the page excerpts, when an expression like `a or b or c` is not used as a boolean, it returns the last evaluated argument. [5]
+
+This is stated in the page excerpt as: ""When used as a general value and not as a Boolean, the return value of a short-circuit operator is the last evaluated argument."" [5]
+
+Additionally, the page excerpt explains that the Boolean operators `and` and `or` are short-circuit operators, which means their arguments are evaluated from left to right, and evaluation stops as soon as the outcome is determined. [5]
+
+This implies that if `a` is true, the expression `a or b or c` will evaluate to `b or c` and then return the last evaluated argument, which is `c`. If `a` is false, the expression will evaluate to `b or c` and then return the last evaluated argument, which is `c`.",True,False,True,6,2819.38,16488.22,2,graded by Claude
+17,react_useeffect,Why does the data fetching example use an ignore variable?,"It is set to true in cleanup so stale responses are ignored, avoiding race conditions when network responses arrive out of order","The data fetching example uses an `ignore` variable to prevent a ""race condition"" [2]. According to the page, a network response may arrive in a different order than the code sends them, and the `ignore` variable ensures that the code doesn't try to update the `bio` state twice in this case.
+
+Here's how it works: when the `fetchBio` function is called, the `ignore` variable is set to `false`. If the response arrives before the code tries to update the `bio` state, the `ignore` variable will still be `false`, and the state will be updated. However, when the cleanup function is called, the `ignore` variable is set to `true`, preventing the code from trying to update the `bio` state again.
+
+The page also mentions that this is a way to prevent ""race conditions"" [2], which is why the `ignore` variable is used.",True,False,True,4,3342.36,14040.29,2,graded by Claude
+18,react_useeffect,How can an interval Effect increment a counter without depending on count?,"Pass the state updater c => c + 1 to setCount, and use an empty dependency array","To increment a counter without depending on `count`, you can pass a state updater to `setCount` as shown in excerpt [4] [5]:
+
+```
+setCount(c => c + 1);
+```
+
+This way, the effect no longer needs to depend on `count`, and it won't need to clean up and set up the interval again every time the count changes.",True,False,True,5,1149.78,11896.83,2,graded by Claude
+19,react_useeffect,What two things are true if an Effect runs in an infinite loop?,"The Effect updates some state, and that state causes a re-render that changes the Effect's dependencies","According to the page excerpts, if an Effect runs in an infinite loop, the following two things must be true:
+
+* Your Effect is updating some state. [4]
+* That state leads to a re-render, which causes the Effect's dependencies to change. [4]
+
+These two conditions are stated in section [4] (Troubleshooting > My Effect keeps re-running in an infinite cycle).",True,False,True,6,2137.98,9011.08,2,graded by Claude
+20,react_useeffect,"How can a component show content that only works in the browser, like data from localStorage, when using server rendering?","Keep a didMount state set to true in an Effect, rendering the initial JSX until then and the client-only JSX after","To show content that only works in the browser, like data from localStorage, when using server rendering, you can use the following pattern:
+
+```
+function MyComponent() {
+  const [didMount, setDidMount] = useState(false);
+  useEffect(() => {
+    setDidMount(true);
+  }, []); // [5]
+  if (didMount) { // [5]
+    // ... return client-only JSX ...
+  } else { // [5]
+    // ... return initial JSX ...
+  }
+}
+```
+
+This pattern uses an `Effect` to set `didMount` to `true` when the component mounts. The `Effect` is only run on the client, so it doesn't run on the server. This allows you to show different content on the client and server.
+
+Note that the page excerpt [5] mentions that Effects don't run on the server, which is why `didMount` is `false` during the initial server render. This is why you need to use this pattern to display different content on the server and client.
+
+Also, the page excerpt [5] mentions that this pattern should be used sparingly, as it can cause jarring changes to the component's appearance, and that you can avoid the need for this by conditionally showing different things with CSS.",True,False,True,6,2751.21,16922.35,2,graded by Claude
+21,wiki_transformer,Which activation functions do Llama and BERT use?,Llama (and PaLM) use SwiGLU; BERT (and GPT-1) use GELU,"According to the page excerpts, Llama and BERT use the following activation functions:
+
+* Llama uses SwiGLU [54]
+* BERT uses GELU [55]
+
+Note that the page also mentions that other activation functions, such as ReLU, are used in the original transformer, but it does not mention whether these are used by Llama and BERT specifically.",True,False,False,7,1486.67,11100.16,2,graded by Claude
+22,wiki_transformer,What is the benefit of RoPE?,The dot product between two vectors depends only on their relative positions,"According to the page, the benefit of RoPE is that the dot-product between two vectors depends on their relative location only: for any integer [3].",True,False,True,3,429.73,4383.4,2,graded by Claude
+23,wiki_transformer,How does continuous batching improve serving?,"It adds new requests and removes finished ones between decoding iterations instead of waiting for the whole batch, improving utilization, latency and throughput","According to the page, continuous batching improves serving by adding new requests to a batch and removing completed requests between decoding iterations instead of waiting for every request in a batch to finish [5]. This improves hardware utilization, reduces latency, and increases throughput for systems that serve many concurrent requests.",True,False,True,7,2035.33,36187.08,2,graded by Claude
+24,wiki_transformer,How much did it cost to train GPT-4?,(not on page),I couldn't find that on this page.,False,True,,7,15228.67,55145.08,,

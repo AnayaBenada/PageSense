@@ -12,8 +12,11 @@ def load_pages() -> dict[str, dict]:
     return {p.stem: json.loads(p.read_text()) for p in sorted(PAGES_DIR.glob("*.json"))}
 
 
-def load_dataset() -> list[dict]:
-    return [json.loads(line) for line in (EVAL_DIR / "dataset.jsonl").read_text().splitlines() if line.strip()]
+def load_dataset(name: str = "dataset") -> list[dict]:
+    """`dataset` is the original 55 questions; `dataset_holdout` was written after
+    tuning, to check that improvements aren't specific to the original set;
+    `dataset_holdout2` is a second, fresh holdout written after that."""
+    return [json.loads(line) for line in (EVAL_DIR / f"{name}.jsonl").read_text().splitlines() if line.strip()]
 
 
 def norm(s: str) -> str:

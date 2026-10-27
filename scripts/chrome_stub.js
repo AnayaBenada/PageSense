@@ -11,18 +11,25 @@
     get: async (key) => (typeof key === "string" ? (key in mem ? { [key]: mem[key] } : {}) : { ...mem }),
     set: async (obj) => Object.assign(mem, obj),
   };
-  const noopEvent = { addListener() {} };
+  const noopEvent = { addListener() {}, removeListener() {} };
+  const tab = { id: 1, windowId: 1, status: "complete", url: page.url, title: page.title };
 
   window.__harnessCalls = [];
   window.chrome = {
     tabs: {
-      query: async () => [{ id: 1, url: page.url, title: page.title }],
+      query: async () => [tab],
+      get: async () => tab,
+      update: async () => tab,
+      create: async ({ url }) => {
+        window.__harnessCalls.push({ create: url });
+        return { ...tab, id: 2, url };
+      },
       onActivated: noopEvent,
       onUpdated: noopEvent,
     },
-    windows: { onFocusChanged: noopEvent },
+    windows: { update: async () => ({}), onFocusChanged: noopEvent },
     extension: { isAllowedFileSchemeAccess: async () => false },
-    storage: { session: area, sync: area },
+    storage: { session: area, sync: area, onChanged: noopEvent },
     scripting: {
       executeScript: async ({ files, func, args }) => {
         window.__harnessCalls.push({ files, func: func?.name, args });

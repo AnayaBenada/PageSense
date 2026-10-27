@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PageSense: ask any web page</title>
+<meta name="description" content="A Chrome side panel that answers questions about the page you're reading. Runs entirely on your Mac.">
+<link rel="icon" href="icon128.png">
+<style>
+  :root {
+    --bg: #fbfaf8; --surface: #ffffff; --text: #1d1d1f; --muted: #5f6368;
+    --line: #e6e3de; --accent: #3b5bdb; --accent-soft: #edf1ff; --code-bg: #16181d; --code-text: #e8eaed;
+    --hl: #fff3a3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121316; --surface: #1b1d22; --text: #ececee; --muted: #a0a4ab;
+      --line: #2c2f36; --accent: #8ea6ff; --accent-soft: #232a45; --code-bg: #0b0c0f; --code-text: #e8eaed;
+      --hl: #5c5320;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--accent); }
+  header.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--text); }
+  .brand img { width: 28px; height: 28px; border-radius: 6px; }
+  .top nav a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 15px; }
+  .top nav a:hover { color: var(--text); }
+
+  .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; padding: 48px 0 64px; }
+  h1 { font-size: 46px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 16px; }
+  .lead { font-size: 19px; color: var(--muted); margin: 0 0 28px; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; padding: 12px 22px; border-radius: 10px;
+         text-decoration: none; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn { color: #0d1020; } }
+  .sub { font-size: 14px; color: var(--muted); margin-top: 12px; }
+
+  /* Mock of the side panel */
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+           box-shadow: 0 12px 40px rgba(0,0,0,.08); font-size: 14px; }
+  .panel-head { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .panel-head span:last-child { color: var(--muted); letter-spacing: 4px; }
+  .panel-body { padding: 14px; display: grid; gap: 10px; }
+  .bubble { padding: 9px 12px; border-radius: 12px; max-width: 92%; }
+  .q { background: var(--accent); color: #fff; justify-self: end; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .q { color: #0d1020; } }
+  .a { background: var(--accent-soft); }
+  .cite { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .src { border-left: 3px solid var(--accent); padding: 4px 10px; color: var(--muted); font-size: 13px; }
+  mark { background: var(--hl); color: var(--text); border-radius: 3px; padding: 0 2px; }
+
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 30px; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .section-lead { color: var(--muted); margin: 0 0 32px; }
+
+  .steps { counter-reset: step; display: grid; gap: 28px; }
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 16px; }
+  .step::before { counter-increment: step; content: counter(step); width: 36px; height: 36px; border-radius: 50%;
+                  background: var(--accent-soft); color: var(--accent); font-weight: 700;
+                  display: flex; align-items: center; justify-content: center; }
+  .step > div, .hero > div { min-width: 0; }
+  .step h3 { margin: 4px 0 6px; font-size: 19px; }
+  .step p, .step ol { margin: 0 0 10px; }
+  .step ol { padding-left: 20px; }
+  kbd { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; border: 1px solid var(--line); border-bottom-width: 2px;
+        border-radius: 5px; padding: 1px 6px; background: var(--surface); }
+  code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+
+  .cmd { display: flex; align-items: stretch; background: var(--code-bg); border-radius: 10px; overflow: hidden; margin: 12px 0; }
+  .cmd pre { margin: 0; padding: 14px 16px; color: var(--code-text); overflow-x: auto; flex: 1;
+             font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .cmd button { border: 0; border-left: 1px solid #2c2f36; background: #22252c; color: #fff; padding: 0 18px;
+                font: 600 14px -apple-system, sans-serif; cursor: pointer; min-width: 86px; }
+  .cmd button:hover { background: #2d313a; }
+  .note { font-size: 15px; color: var(--muted); }
+
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 16px; }
+
+  .reqs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .req { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .req b { display: block; font-size: 16px; }
+  .req span { color: var(--muted); font-size: 14px; }
+
+  details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+
+  footer { padding: 32px 0 48px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+
+  @media (max-width: 760px) {
+    h1 { font-size: 34px; }
+    .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 24px; }
+    .features { grid-template-columns: 1fr; }
+    .reqs { grid-template-columns: repeat(2, 1fr); }
+    .top nav a:not(:last-child) { display: none; }
+    .cmd { flex-direction: column; }
+    .cmd button { border-left: 0; border-top: 1px solid #2c2f36; padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#"><img src="icon128.png" alt="">PageSense</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/AnayaBenada/PageSense">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>Ask any web page a question.</h1>
+      <p class="lead">PageSense sits beside the page you're reading in Chrome. Ask it anything and get an answer from the page itself, with the exact passage highlighted. It runs entirely on your Mac: nothing you read is sent anywhere.</p>
+      <a class="btn" href="#install">Install for Mac</a>
+      <p class="sub">Free and open source · No account</p>
+    </div>
+    <div class="panel" aria-hidden="true">
+      <div class="panel-head"><span>PageSense</span><span><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg> ☆ ▤</span></div>
+      <div class="panel-body">
+        <div class="bubble q">Can I get a refund after 2 weeks?</div>
+        <div class="bubble a">Yes. You can return any item within <b>30 days</b> for a full refund, and it goes back to your original payment method. <span class="cite">[1]</span></div>
+        <div class="src"><mark>You can return any item within 30 days for a full refund.</mark></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Install on your Mac</h2>
+    <p class="section-lead">About 10 minutes, mostly waiting for downloads. You'll do it once.</p>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Open Terminal</h3>
+          <p>Press <kbd>⌘</kbd> <kbd>Space</kbd>, type <b>Terminal</b>, and press <kbd>Return</kbd>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Paste this and press Return</h3>
+          <div class="cmd">
+            <pre id="cmd">curl -fsSL https://raw.githubusercontent.com/AnayaBenada/PageSense/main/install.sh | bash</pre>
+            <button type="button" id="copy">Copy</button>
+          </div>
+          <p class="note">This downloads PageSense and the AI models it needs (about 3 GB) and starts PageSense in the background. It starts by itself whenever you log in, so you won't need Terminal again. It's done when it says <b>"Last step: add the extension to Chrome"</b> and opens a folder called <code>extension</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Add the extension to Chrome</h3>
+          <ol>
+            <li>In Chrome, go to <code>chrome://extensions</code></li>
+            <li>Turn on <b>Developer mode</b> (top right corner)</li>
+            <li>Click <b>Load unpacked</b> and choose the <code>extension</code> folder that just opened (it's in <code>PageSense</code> in your home folder)</li>
+          </ol>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Try it</h3>
+          <p>Click the puzzle-piece icon in Chrome's toolbar and pin PageSense. Open any article or documentation page, press <kbd>⌥ Option</kbd> <kbd>⇧ Shift</kbd> <kbd>P</kbd>, and ask a question.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>What it does</h2>
+    <p class="section-lead">Built for long pages you'd rather not read top to bottom.</p>
+    <div class="features">
+      <div class="card">
+        <h3>Answers from the page</h3>
+        <p>Ask in plain words. Every answer cites the passages it came from; click one to jump to it on the page.</p>
+      </div>
+      <div class="card">
+        <h3>Smart Find</h3>
+        <p>Like <kbd>⌘</kbd> <kbd>F</kbd>, but by meaning. Search "how do I cancel" and it highlights "end your plan". Press <kbd>⌥</kbd> <kbd>⇧</kbd> <kbd>F</kbd>.</p>
+      </div>
+      <div class="card">
+        <h3>Reading library</h3>
+        <p>Save pages with ☆, then search everything you've saved by meaning and reopen the page with the passage highlighted.</p>
+      </div>
+      <div class="card">
+        <h3>Private by design</h3>
+        <p>The AI runs on your own computer. Pages, questions and your library never leave it, and there's no account.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What you need</h2>
+    <p class="section-lead">The installer sets up everything else for you.</p>
+    <div class="reqs">
+      <div class="req"><b>A Mac</b><span>Apple Silicon (M1 or newer) recommended</span></div>
+      <div class="req"><b>8 GB memory</b><span>or more</span></div>
+      <div class="req"><b>4 GB free space</b><span>for the AI models</span></div>
+      <div class="req"><b>Google Chrome</b><span><a href="https://www.google.com/chrome/">Download</a></span></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <details>
+      <summary>Is it really private?</summary>
+      <p>Yes. The language model (Meta's LLaMA 3.2, run by Ollama) and the search models run on your Mac. The extension only talks to a program on your own computer (<code>localhost</code>). Your saved library is a file in <code>~/.pagesense</code>.</p>
+    </details>
+    <details>
+      <summary>Why does Chrome need "Developer mode"?</summary>
+      <p>PageSense isn't in the Chrome Web Store yet, and Chrome only lets you add extensions from outside the store with Developer mode on. It's safe to leave on.</p>
+    </details>
+    <details>
+      <summary>The panel says it can't reach the backend</summary>
+      <p>Run the install command again. It restarts PageSense without downloading everything again. If it still fails, the log is in <code>~/.pagesense/logs/backend.log</code>.</p>
+    </details>
+    <details>
+      <summary>Answers are slow on my Mac</summary>
+      <p>Use the smaller model by running the installer like this: <code>curl -fsSL https://raw.githubusercontent.com/AnayaBenada/PageSense/main/install.sh | PAGESENSE_LLM_MODEL=llama3.2:1b bash</code></p>
+    </details>
+    <details>
+      <summary>How do I update?</summary>
+      <p>Run the same install command. Updates take about 20 seconds and keep your library. Then click the reload arrow on PageSense in <code>chrome://extensions</code>.</p>
+    </details>
+    <details>
+      <summary>How do I uninstall?</summary>
+      <p>In Terminal, run <code>~/PageSense/uninstall.sh</code> (add <code>--all</code> to also delete your library), then remove the extension in <code>chrome://extensions</code>. To remove the Ollama app, drag it from Applications to the Trash.</p>
+    </details>
+    <details>
+      <summary>Does it work on Windows or Linux?</summary>
+      <p>The same command works on Linux. Windows isn't supported yet.</p>
+    </details>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>PageSense is open source. <a href="https://github.com/AnayaBenada/PageSense">View the code on GitHub</a>.</footer>
+</div>
+
+<script>
+  const btn = document.getElementById("copy");
+  btn.addEventListener("click", async () => {
+    const text = document.getElementById("cmd").textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const r = document.createRange(); r.selectNodeContents(document.getElementById("cmd"));
+      getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand("copy");
+    }
+    btn.textContent = "Copied!";
+    setTimeout(() => (btn.textContent = "Copy"), 2000);
+  });
+</script>
+</body>
+</html>

@@ -3,7 +3,13 @@
 POST /index       index a page's text, returns a page_id
 POST /ask         answer a question about an indexed page (JSON)
 POST /ask/stream  same, streamed as Server-Sent Events
+POST /find        Smart Find: sentences on the page that match what the query means
 GET  /health      backend, embedder and Ollama status
+
+POST   /library/pages       save an indexed page to the library
+GET    /library/pages       list saved pages (?q= filters, ?url= finds one)
+DELETE /library/pages/{id}  remove a saved page
+POST   /library/search      best passages across all saved pages
 """
 import json
 import logging
@@ -17,10 +23,28 @@ from starlette.concurrency import run_in_threadpool
 
 from .config import Settings, settings as default_settings
 from .embedder import Embedder, Reranker
+from .find import find
 from .index_store import IndexStore, PageIndex
+from .library import Library, SavedPage
 from .llm import LLMError, OllamaClient
-from .rag import build_messages, is_overview_question, overview_hits, page_order, retrieval_query, retrieve
-from .schemas import AskRequest, AskResponse, IndexRequest, IndexResponse, Source, Timings
+from .rag import add_neighbors, build_messages, is_overview_question, overview_hits, page_order, retrieval_query, retrieve
+from .schemas import (
+    AskRequest,
+    AskResponse,
+    FindMatch,
+    FindRequest,
+    FindResponse,
+    IndexRequest,
+    IndexResponse,
+    LibraryPagesResponse,
+    LibraryResult,
+    LibrarySearchRequest,
+    LibrarySearchResponse,
+    SavedPageOut,
+    SaveRequest,
+    Source,
+    Timings,
+)
 
 log = logging.getLogger("pagesense")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -49,16 +73,18 @@ def create_app(
             rr = CrossEncoderReranker(cfg.rerank_model, cfg.embed_device)
         app.state.reranker = rr
         app.state.store = IndexStore(emb, cfg.cache_size, cfg.chunk_tokens, cfg.chunk_overlap)
+        app.state.library = Library(cfg.library_path, emb, cfg.embed_model)
         app.state.llm = llm or OllamaClient(
             cfg.ollama_url, cfg.llm_model, cfg.llm_temperature, cfg.llm_num_ctx, cfg.llm_timeout_s
         )
         yield
+        app.state.library.close()
 
     app = FastAPI(title="PageSense", version="1.0.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origin_regex=r"^chrome-extension://.*$|^http://(localhost|127\.0\.0\.1)(:\d+)?$",
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "DELETE"],
         allow_headers=["*"],
     )
 
@@ -78,7 +104,7 @@ def create_app(
         except ValueError as e:
             raise HTTPException(422, detail={"code": "empty_page", "message": str(e)}) from e
 
-    async def _resolve_page(store: IndexStore, req: AskRequest) -> tuple[PageIndex, float]:
+    async def _resolve_page(store: IndexStore, req: AskRequest | FindRequest) -> tuple[PageIndex, float]:
         """Find the page for a question; index it inline if text was sent."""
         if req.page_id and (page := store.get(req.page_id)):
             return page, 0.0
@@ -118,7 +144,9 @@ def create_app(
                 cfg.min_score,
                 request.app.state.reranker,
                 cfg.rerank_candidates,
+                cfg.hybrid_search,
             )
+            hits = add_neighbors(page, hits, cfg.neighbor_hits)
         hits = page_order(hits)
         retrieve_ms = _ms(start)
         sources = [Source(chunk_id=h.chunk.id, heading=h.chunk.heading, text=h.chunk.text, score=None if h.score is None else round(h.score, 4)) for h in hits]
@@ -135,6 +163,7 @@ def create_app(
             "rerank_model": cfg.rerank_model if request.app.state.reranker else None,
             "ollama": llm_status,
             "cached_pages": len(request.app.state.store),
+            "library_pages": len(request.app.state.library),
         }
 
     @app.post("/index", response_model=IndexResponse)
@@ -187,6 +216,74 @@ def create_app(
             yield sse("done", {"timings": timings.model_dump()})
 
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+    @app.post("/find", response_model=FindResponse)
+    async def find_on_page(request: Request, req: FindRequest):
+        query = _validate_question(req.query)
+        page, _ = await _resolve_page(request.app.state.store, req)
+        start = time.perf_counter()
+        reranker = request.app.state.reranker
+        matches = await run_in_threadpool(
+            find,
+            request.app.state.store,
+            page,
+            query,
+            req.top_k or cfg.find_top_k,
+            cfg.find_chunks,
+            cfg.min_score,
+            reranker,
+            cfg.find_rerank_chunks,
+            cfg.rerank_candidates,
+            cfg.hybrid_search,
+        )
+        if reranker:
+            matches = [m for m in matches if m.score >= cfg.find_min_score]
+        log.info("find page=%s matches=%d ms=%.1f", page.page_id, len(matches), _ms(start))
+        return FindResponse(page_id=page.page_id, matches=[FindMatch(**vars(m)) for m in matches], find_ms=_ms(start))
+
+    def _saved(p: SavedPage) -> SavedPageOut:
+        return SavedPageOut(**vars(p))
+
+    @app.post("/library/pages", response_model=SavedPageOut)
+    async def save_page(request: Request, req: SaveRequest):
+        page = request.app.state.store.get(req.page_id)
+        if page is None:
+            raise HTTPException(
+                404,
+                detail={"code": "page_not_indexed", "message": "Page not indexed (or evicted). Re-send its text."},
+            )
+        saved = await run_in_threadpool(request.app.state.library.save, page)
+        log.info("library save url=%s chunks=%d", saved.url, saved.n_chunks)
+        return _saved(saved)
+
+    @app.get("/library/pages", response_model=LibraryPagesResponse)
+    async def list_pages(request: Request, q: str = "", url: str = ""):
+        pages = await run_in_threadpool(request.app.state.library.pages, q.strip(), url)
+        return LibraryPagesResponse(pages=[_saved(p) for p in pages])
+
+    @app.delete("/library/pages/{saved_id}")
+    async def delete_page(request: Request, saved_id: int):
+        if not await run_in_threadpool(request.app.state.library.delete, saved_id):
+            raise HTTPException(404, detail={"code": "not_saved", "message": "That page isn't in your library."})
+        return {"deleted": saved_id}
+
+    @app.post("/library/search", response_model=LibrarySearchResponse)
+    async def search_library(request: Request, req: LibrarySearchRequest):
+        query = _validate_question(req.query)
+        start = time.perf_counter()
+        hits = await run_in_threadpool(
+            request.app.state.library.search,
+            query,
+            req.top_k or cfg.top_k,
+            cfg.min_score,
+            request.app.state.reranker,
+            cfg.rerank_candidates,
+        )
+        results = [
+            LibraryResult(page=_saved(h.page), chunk_id=h.chunk.id, heading=h.chunk.heading, text=h.chunk.text, score=round(h.score, 4))
+            for h in hits
+        ]
+        return LibrarySearchResponse(results=results, search_ms=_ms(start))
 
     return app
 
