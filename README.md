@@ -25,6 +25,8 @@ Chrome side panel ──(page text)──▶ FastAPI ──▶ chunk (300 tok, 5
 
 ## Install
 
+Install page: **https://anayabenada.github.io/PageSense/**
+
 On macOS or Linux, paste this into Terminal:
 
 ```bash

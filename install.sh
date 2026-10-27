@@ -54,6 +54,8 @@ BACKEND="$ROOT/backend"
 mkdir -p "$DATA/logs"
 
 # ---------- 2. Python ----------
+# Use Python 3.10+ if it's installed; otherwise (e.g. a Mac with only the system
+# Python 3.9) uv downloads a private copy, without needing admin rights.
 bold "Checking Python"
 PY=""
 for cand in python3.13 python3.12 python3.11 python3.10 python3; do
@@ -61,60 +63,93 @@ for cand in python3.13 python3.12 python3.11 python3.10 python3; do
     PY="$(command -v "$cand")"; break
   fi
 done
-if [ -z "$PY" ]; then
-  if [ "$OS" = Darwin ] && command -v brew >/dev/null; then
-    brew install python@3.12
-    PY="$(brew --prefix)/bin/python3.12"
-  elif [ "$OS" = Darwin ]; then
-    fail "Python 3.10 or newer is required. Install it from https://www.python.org/downloads/ and run this again."
-  else
-    fail "Python 3.10 or newer is required, e.g.: sudo apt install python3 python3-venv"
-  fi
+UV=""
+get_uv() {
+  UV="$DATA/bin/uv"
+  [ -x "$UV" ] || curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="$DATA/bin" INSTALLER_NO_MODIFY_PATH=1 sh >/dev/null
+}
+if [ -n "$PY" ]; then
+  echo "Using $("$PY" --version) at $PY"
+else
+  echo "Python 3.10 or newer not found; PageSense will use its own copy."
+  get_uv
 fi
-echo "Using $("$PY" --version) at $PY"
 
 # ---------- 3. Ollama + model ----------
 bold "Checking Ollama"
-if ! command -v ollama >/dev/null; then
-  if [ "$OS" = Linux ]; then
-    curl -fsSL https://ollama.com/install.sh | sh
-  elif command -v brew >/dev/null; then
-    brew install ollama
-  else
-    fail "Ollama is required. Install it from https://ollama.com/download, open it once, and run this again."
-  fi
-fi
+find_ollama() {
+  command -v ollama && return
+  for p in /opt/homebrew/bin/ollama /usr/local/bin/ollama \
+           /Applications/Ollama.app/Contents/Resources/ollama "$HOME/Applications/Ollama.app/Contents/Resources/ollama"; do
+    [ -x "$p" ] && { echo "$p"; return; }
+  done
+  return 1
+}
+OLLAMA="$(find_ollama || true)"
 if ! curl -sf localhost:11434/api/tags >/dev/null; then
-  echo "Starting Ollama…"
-  if [ "$OS" = Darwin ] && command -v brew >/dev/null && brew list ollama >/dev/null 2>&1; then
-    brew services start ollama >/dev/null
-  elif [ "$OS" = Darwin ] && [ -d /Applications/Ollama.app ]; then
-    open -a Ollama
-  elif [ "$OS" = Linux ] && command -v systemctl >/dev/null && systemctl list-unit-files ollama.service >/dev/null 2>&1; then
-    sudo systemctl start ollama
-  else
-    (nohup ollama serve >/dev/null 2>&1 &)
+  if [ -z "$OLLAMA" ]; then
+    if [ "$OS" = Linux ]; then
+      curl -fsSL https://ollama.com/install.sh | sh
+    elif command -v brew >/dev/null; then
+      brew install ollama
+    else
+      echo "Downloading the Ollama app (about 200 MB)…"
+      apps=/Applications; [ -w "$apps" ] || { apps="$HOME/Applications"; mkdir -p "$apps"; }
+      tmp="$(mktemp -d)"
+      curl -fL# -o "$tmp/Ollama.zip" https://ollama.com/download/Ollama-darwin.zip
+      ditto -xk "$tmp/Ollama.zip" "$apps"
+      rm -rf "$tmp"
+    fi
+    OLLAMA="$(find_ollama)" || fail "Ollama didn't install. Install it from https://ollama.com/download and run this again."
   fi
-  for _ in $(seq 1 30); do curl -sf localhost:11434/api/tags >/dev/null && break; sleep 1; done
-  curl -sf localhost:11434/api/tags >/dev/null || fail "Ollama didn't start. Try running 'ollama serve' in another terminal."
+  echo "Starting Ollama…"
+  case "$OLLAMA" in
+    */Ollama.app/*) open "${OLLAMA%%/Contents/*}" ;;
+    *) if [ "$OS" = Darwin ] && command -v brew >/dev/null && brew list ollama >/dev/null 2>&1; then
+         brew services start ollama >/dev/null
+       elif [ "$OS" = Linux ] && systemctl list-unit-files ollama.service 2>/dev/null | grep -q ollama; then
+         sudo systemctl start ollama
+       else
+         (nohup "$OLLAMA" serve >/dev/null 2>&1 &)
+       fi ;;
+  esac
+  for _ in $(seq 1 60); do curl -sf localhost:11434/api/tags >/dev/null && break; sleep 1; done
+  curl -sf localhost:11434/api/tags >/dev/null || fail "Ollama didn't start. Open the Ollama app (or run 'ollama serve') and run this again."
 fi
-if ! ollama list | awk 'NR>1 {print $1}' | grep -qx "$MODEL\(:latest\)\{0,1\}"; then
+if ! curl -sf localhost:11434/api/tags | grep -qE "\"name\": *\"$MODEL(:latest)?\""; then
   echo "Downloading $MODEL (about 2 GB, one time)…"
-  ollama pull "$MODEL"
+  if [ -n "$OLLAMA" ]; then
+    "$OLLAMA" pull "$MODEL"
+  else
+    curl -sf localhost:11434/api/pull -d "{\"model\": \"$MODEL\", \"stream\": false}" >/dev/null || fail "Couldn't download $MODEL."
+  fi
 fi
 
 # ---------- 4. Backend ----------
 bold "Installing the backend"
-if [ ! -x "$BACKEND/.venv/bin/python" ]; then
-  "$PY" -m venv "$BACKEND/.venv" || fail "Couldn't create a virtualenv. On Debian/Ubuntu: sudo apt install python3-venv"
-fi
 VPY="$BACKEND/.venv/bin/python"
-"$VPY" -m pip install -q --upgrade pip
+if [ ! -x "$VPY" ]; then
+  if [ -n "$PY" ] && "$PY" -m venv "$BACKEND/.venv" 2>/dev/null; then :
+  else
+    rm -rf "$BACKEND/.venv"
+    [ -n "$UV" ] || get_uv
+    "$UV" venv -q --python 3.12 "$BACKEND/.venv"
+  fi
+fi
+pip_install() {
+  if "$VPY" -m pip --version >/dev/null 2>&1; then
+    "$VPY" -m pip install -q "$@"
+  else
+    [ -n "$UV" ] || get_uv
+    "$UV" pip install -q --python "$VPY" "$@"
+  fi
+}
+pip_install --upgrade pip 2>/dev/null || true
 if [ "$OS" = Linux ] && ! command -v nvidia-smi >/dev/null; then
   # Without a GPU, the CPU build of PyTorch avoids a multi-GB CUDA download.
-  "$VPY" -m pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+  pip_install torch --index-url https://download.pytorch.org/whl/cpu
 fi
-"$VPY" -m pip install -q -r "$BACKEND/requirements.txt"
+pip_install -r "$BACKEND/requirements.txt"
 
 echo "Downloading the search models (about 200 MB, one time)…"
 (cd "$BACKEND" && "$VPY" -c '
@@ -208,6 +243,9 @@ fi
 
 # ---------- 6. Extension ----------
 bold "Last step: add the extension to Chrome"
+if [ "$OS" = Darwin ] && [ ! -d "/Applications/Google Chrome.app" ] && [ ! -d "$HOME/Applications/Google Chrome.app" ]; then
+  echo "  (Chrome isn't installed yet: get it from https://www.google.com/chrome/ first.)"
+fi
 cat <<EOF
   1. Open chrome://extensions in Chrome
   2. Turn on "Developer mode" (top right)
