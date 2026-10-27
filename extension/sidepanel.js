@@ -3,6 +3,7 @@
 // to the sentences that match what you mean; pages can be saved to a local
 // library and searched across later.
 const DEFAULT_BACKEND = "http://localhost:8000";
+const INSTALL_PAGE = "https://anayabenada.github.io/PageSense/#install";
 const HISTORY_TURNS = 3;
 const RESTRICTED = /^(chrome|chrome-extension|chrome-search|chrome-untrusted|devtools|edge|about|view-source|data|javascript):/i;
 const WEB_STORE = /^https:\/\/(chrome\.google\.com\/webstore|chromewebstore\.google\.com)/i;
@@ -51,7 +52,8 @@ async function saveChat(url, chat) {
 }
 
 function restrictedReason(url) {
-  if (!url) return "No page is open in this tab.";
+  // Without the "tabs" permission Chrome hides the URL of pages extensions can't read (chrome://, the Web Store…).
+  if (!url) return "PageSense can't read this tab. Open a regular web page.";
   if (RESTRICTED.test(url) || WEB_STORE.test(url)) return "Chrome doesn't allow extensions to read this page.";
   if (/^file:/i.test(url) && !state.fileAccess) return 'To read local files, enable "Allow access to file URLs" for PageSense in chrome://extensions.';
   return null;
@@ -67,7 +69,9 @@ async function api(path, body, { method = body ? "POST" : "GET", signal } = {}) 
       signal,
     });
   } catch (e) {
-    throw new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. If you installed PageSense, run the install command again to restart it; in a dev setup, run scripts/start.sh.`);
+    const err = new UserFacingError(`Can't reach the PageSense backend at ${state.backend}. If you installed PageSense, run the install command again to restart it; in a dev setup, run scripts/start.sh.`);
+    err.offline = true;
+    throw err;
   }
   if (!res.ok) {
     let detail = {};
@@ -735,6 +739,7 @@ async function checkHealth() {
   const detail = $("health-detail");
   try {
     const h = await (await api("/health")).json();
+    showSetup(false);
     if (h.status === "ok") {
       dot.className = "dot ok";
       dot.title = `Ready · ${h.llm_model}`;
@@ -750,7 +755,20 @@ async function checkHealth() {
     dot.className = "dot down";
     dot.title = "Backend offline";
     detail.textContent = e.message;
+    if (e.offline) showSetup(true);
   }
+}
+
+// Shown instead of the chat while the backend can't be reached, e.g. right after
+// installing the extension from the Web Store, before the backend is installed.
+let setupPoll = null;
+function showSetup(on) {
+  if (document.body.classList.contains("needs-setup") === on) return;
+  document.body.classList.toggle("needs-setup", on);
+  $("setup").hidden = !on;
+  clearInterval(setupPoll);
+  // Check often while waiting, so the panel comes alive as soon as setup finishes.
+  if (on) setupPoll = setInterval(checkHealth, 5000);
 }
 
 async function loadSettings() {
@@ -863,6 +881,11 @@ $("clear").addEventListener("click", async () => {
   if (!state.tab?.url || state.busy) return;
   await saveChat(state.tab.url, []);
   await renderChat();
+});
+$("setup-open").addEventListener("click", () => chrome.tabs.create({ url: INSTALL_PAGE }));
+$("setup-retry").addEventListener("click", async () => {
+  await checkHealth();
+  if (document.body.classList.contains("needs-setup")) toast("Still can't reach PageSense. If you just ran the installer, give it a minute.");
 });
 $("settings-btn").addEventListener("click", () => {
   $("settings").hidden = !$("settings").hidden;

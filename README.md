@@ -39,6 +39,8 @@ It downloads PageSense to `~/PageSense`, installs [Ollama](https://ollama.com) a
 2. Click **Load unpacked** and select `~/PageSense/extension`.
 3. Pin PageSense, open any article, and press **Alt+Shift+P**.
 
+[store/LISTING.md](store/LISTING.md) has everything for the Chrome Web Store submission (listing text, permission justifications, images; build the zip with `scripts/package_extension.sh`). Privacy policy: [docs/privacy.html](https://anayabenada.github.io/PageSense/privacy.html).
+
 Run the same command again to update. `~/PageSense/uninstall.sh` stops the background service (`--all` also deletes your saved library). Options such as a smaller model for low-RAM machines (`PAGESENSE_LLM_MODEL=llama3.2:1b`) or a different port are listed at the top of [install.sh](install.sh). Backend logs are in `~/.pagesense/logs/backend.log`.
 
 ## Manual setup (for development)
