@@ -42,12 +42,18 @@ class FakeLLM:
     async def chat(self, messages):
         return "".join([t async for t in self.stream(messages)])
 
-    async def stream(self, messages):
+    async def chat_json(self, messages, temperature=None):
+        return "".join([t async for t in self.stream(messages, json_mode=True)])
+
+    async def stream(self, messages, json_mode=False, temperature=None):
         self.last_messages = messages
         if self.fail:
             raise LLMError("Cannot reach Ollama")
-        for tok in ["The ", "answer ", "[1]"]:
+        for tok in (self.json_reply(messages) if json_mode else ["The ", "answer ", "[1]"]):
             yield tok
+
+    def json_reply(self, messages):
+        return ["{}"]
 
 
 @pytest.fixture

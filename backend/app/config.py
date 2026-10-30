@@ -37,6 +37,7 @@ class Settings:
     # Smart Find splits this many of the best chunks into sentences and scores each.
     find_chunks: int = int(_env("FIND_CHUNKS", "2"))
     find_rerank_chunks: bool = _env("FIND_RERANK_CHUNKS", "1") not in ("0", "false", "")
+    quiz_questions: int = int(_env("QUIZ_QUESTIONS", "5"))
     find_top_k: int = int(_env("FIND_TOP_K", "5"))
     # Matches scoring below this (cross-encoder logit) aren't shown.
     find_min_score: float = float(_env("FIND_MIN_SCORE", "-2"))

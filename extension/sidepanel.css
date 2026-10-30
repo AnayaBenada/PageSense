@@ -202,3 +202,50 @@ details.sources summary { color: var(--muted); cursor: pointer; user-select: non
   flex: 1; min-width: 0; padding: 6px 8px; border: 0; background: transparent; color: var(--fg); text-align: left;
 }
 .lib-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- modes & student tools ---------- */
+.row select {
+  flex: 1; min-width: 0; padding: 5px 6px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg); color: var(--fg); font: inherit;
+}
+.settings .row + label { display: block; margin-top: 10px; }
+.student-only { display: none; }
+body.student .student-only { display: block; }
+
+.welcome { margin: auto 0; padding: 16px 8px; text-align: center; display: grid; gap: 10px; }
+.welcome p { margin: 0; }
+.mode-card {
+  display: grid; gap: 2px; text-align: left; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-soft); color: var(--fg);
+}
+.mode-card:hover { border-color: var(--accent); }
+.mode-card span { color: var(--muted); font-size: 12px; }
+
+.study-bar { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.study-bar .chip { font-size: 12px; }
+.study-bar .chip:disabled { opacity: .5; cursor: default; }
+
+.quiz-head, .tool-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.quiz-q { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--bg); }
+.quiz-q .q-text { font-weight: 600; margin-bottom: 8px; }
+.choice {
+  display: block; width: 100%; text-align: left; margin: 4px 0; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-soft); color: var(--fg);
+}
+.choice:hover:not(:disabled) { border-color: var(--accent); }
+.choice:disabled { cursor: default; }
+.choice.correct { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, var(--bg)); }
+.choice.wrong { border-color: var(--error); background: color-mix(in srgb, var(--error) 12%, var(--bg)); }
+.q-result { margin-top: 8px; font-size: 13px; }
+.q-result b.ok { color: var(--ok); }
+.q-result b.no { color: var(--error); }
+.q-result p { margin: 4px 0; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--accent); font-size: 12px; }
+.tool-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.tool-actions button.small-btn {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-soft); color: var(--fg); font-size: 12px;
+}
+.tool-actions button.small-btn:hover { border-color: var(--accent); }
+.cite-block { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--bg); }
+.cite-block .label { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+.cite-block .text { margin: 6px 0; user-select: text; overflow-wrap: anywhere; padding-left: 2em; text-indent: -2em; }

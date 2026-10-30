@@ -4,6 +4,8 @@ POST /index       index a page's text, returns a page_id
 POST /ask         answer a question about an indexed page (JSON)
 POST /ask/stream  same, streamed as Server-Sent Events
 POST /find        Smart Find: sentences on the page that match what the query means
+POST /study/quiz  student mode: multiple-choice questions on the page (SSE, one per event)
+POST /study/notes student mode: study notes for the page (SSE, streamed Markdown)
 GET  /health      backend, embedder and Ollama status
 
 POST   /library/pages       save an indexed page to the library
@@ -27,6 +29,19 @@ from .find import find
 from .index_store import IndexStore, PageIndex
 from .library import Library, SavedPage
 from .llm import LLMError, OllamaClient
+from .study import (
+    check_choice_messages,
+    check_open_messages,
+    key_sentence,
+    matched_choice,
+    notes_chunks,
+    notes_messages,
+    parse_question,
+    picked_choice,
+    quiz_chunks,
+    quiz_messages,
+    shuffle_choices,
+)
 from .rag import add_neighbors, build_messages, is_overview_question, overview_hits, page_order, retrieval_query, retrieve
 from .schemas import (
     AskRequest,
@@ -37,6 +52,8 @@ from .schemas import (
     IndexRequest,
     IndexResponse,
     LibraryPagesResponse,
+    NotesRequest,
+    QuizRequest,
     LibraryResult,
     LibrarySearchRequest,
     LibrarySearchResponse,
@@ -52,6 +69,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 def _ms(start: float) -> float:
     return round((time.perf_counter() - start) * 1000, 2)
+
+
+def sse(event: str, data) -> str:
+    """One Server-Sent Events message."""
+    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
 def create_app(
@@ -104,7 +126,7 @@ def create_app(
         except ValueError as e:
             raise HTTPException(422, detail={"code": "empty_page", "message": str(e)}) from e
 
-    async def _resolve_page(store: IndexStore, req: AskRequest | FindRequest) -> tuple[PageIndex, float]:
+    async def _resolve_page(store: IndexStore, req: AskRequest | FindRequest | QuizRequest | NotesRequest) -> tuple[PageIndex, float]:
         """Find the page for a question; index it inline if text was sent."""
         if req.page_id and (page := store.get(req.page_id)):
             return page, 0.0
@@ -197,9 +219,6 @@ def create_app(
         page, sources, messages, index_ms, retrieve_ms = await _prepare(request, req)
         llm = request.app.state.llm
 
-        def sse(event: str, data) -> str:
-            return f"event: {event}\ndata: {json.dumps(data)}\n\n"
-
         async def events():
             yield sse("meta", {"page_id": page.page_id, "sources": [s.model_dump() for s in sources]})
             gen_start = time.perf_counter()
@@ -240,6 +259,85 @@ def create_app(
             matches = [m for m in matches if m.score >= cfg.find_min_score]
         log.info("find page=%s matches=%d ms=%.1f", page.page_id, len(matches), _ms(start))
         return FindResponse(page_id=page.page_id, matches=[FindMatch(**vars(m)) for m in matches], find_ms=_ms(start))
+
+    @app.post("/study/quiz")
+    async def study_quiz(request: Request, req: QuizRequest):
+        store: IndexStore = request.app.state.store
+        page, _ = await _resolve_page(store, req)
+        want = req.n or cfg.quiz_questions
+        chunks = quiz_chunks(page, want + 2, req.round)
+        llm = request.app.state.llm
+
+        async def write_question(chunk):
+            fact = key_sentence(page, chunk)
+            if not fact:
+                return None
+            # Retry once, a little less deterministically, if the question isn't usable
+            # or fails the blind checks (see study.py).
+            for temperature in (None, 0.7):
+                q = parse_question(await llm.chat_json(quiz_messages(page, chunk, fact), temperature=temperature))
+                if not q:
+                    continue
+                q = shuffle_choices(q, f"{page.page_id}:{req.round}:{chunk.id}")
+                forward, backward = [0, 1, 2, 3], [3, 2, 1, 0]
+                if picked_choice(await llm.chat_json(check_choice_messages(chunk, q, forward)), forward) != q["answer"]:
+                    continue
+                if picked_choice(await llm.chat_json(check_choice_messages(chunk, q, backward)), backward) != q["answer"]:
+                    continue
+                open_raw = await llm.chat_json(check_open_messages(chunk, q))
+                if await run_in_threadpool(matched_choice, store, open_raw, q) == q["answer"]:
+                    return {**q, "evidence": fact}
+            return None
+
+        async def events():
+            start, made = time.perf_counter(), 0
+            for chunk in chunks:
+                if made == want:
+                    break
+                if await request.is_disconnected():
+                    return
+                try:
+                    q = await write_question(chunk)
+                except LLMError as e:
+                    yield sse("error", {"code": "llm_unavailable", "message": str(e)})
+                    return
+                if not q:
+                    log.info("quiz page=%s chunk=%d: no question passed the check", page.page_id, chunk.id)
+                    continue
+                made += 1
+                yield sse("question", {
+                    "question": q["question"], "choices": q["choices"], "answer": q["answer"],
+                    "evidence": q["evidence"], "heading": chunk.heading, "chunk_id": chunk.id,
+                })
+            if not made:
+                yield sse("error", {"code": "quiz_failed", "message": "Couldn't write quiz questions for this page. Try again."})
+                return
+            log.info("quiz page=%s round=%d questions=%d ms=%.1f", page.page_id, req.round, made, _ms(start))
+            yield sse("done", {"page_id": page.page_id, "n": made, "ms": _ms(start)})
+
+        return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+    @app.post("/study/notes")
+    async def study_notes(request: Request, req: NotesRequest):
+        page, _ = await _resolve_page(request.app.state.store, req)
+        chunks = notes_chunks(page)
+        llm = request.app.state.llm
+
+        async def events():
+            start = time.perf_counter()
+            yield sse("meta", {"page_id": page.page_id, "partial": len(chunks) < len(page.chunks)})
+            try:
+                async for tok in llm.stream(notes_messages(page, chunks)):
+                    if await request.is_disconnected():
+                        return
+                    yield sse("token", {"t": tok})
+            except LLMError as e:
+                yield sse("error", {"code": "llm_unavailable", "message": str(e)})
+                return
+            log.info("notes page=%s chunks=%d/%d ms=%.1f", page.page_id, len(chunks), len(page.chunks), _ms(start))
+            yield sse("done", {"ms": _ms(start)})
+
+        return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
 
     def _saved(p: SavedPage) -> SavedPageOut:
         return SavedPageOut(**vars(p))

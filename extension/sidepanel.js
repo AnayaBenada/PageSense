@@ -1,7 +1,8 @@
 // PageSense side panel: extracts the active tab's text, indexes it on the
 // backend, and streams grounded answers with clickable sources. Smart Find jumps
 // to the sentences that match what you mean; pages can be saved to a local
-// library and searched across later.
+// library and searched across later. Student mode adds practice quizzes, study
+// notes and citations for the page.
 const DEFAULT_BACKEND = "http://localhost:8000";
 const INSTALL_PAGE = "https://anayabenada.github.io/PageSense/#install";
 const HISTORY_TURNS = 3;
@@ -20,6 +21,7 @@ const state = {
   libraryOpen: false,
   find: null, // { query, matches, i, tabId } for the open Smart Find
   fileAccess: false, // "Allow access to file URLs" toggle in chrome://extensions
+  mode: null, // "student" | "everyday"; null until the user picks one
 };
 
 // ---------- utilities ----------
@@ -251,6 +253,7 @@ function renderPageInfo() {
   }
   $("question").disabled = !!reason;
   $("send").disabled = !!reason || state.busy;
+  for (const id of ["quiz-btn", "notes-btn", "cite-btn"]) $(id).disabled = !!reason || state.busy;
 }
 
 function scrollChat() {
@@ -337,10 +340,15 @@ async function renderChat() {
   const chat = $("chat");
   chat.querySelectorAll(".msg").forEach((m) => m.remove());
   const turns = state.tab?.url ? await loadChat(state.tab.url) : [];
-  $("empty").hidden = turns.length > 0;
+  $("welcome").hidden = turns.length > 0 || !!state.mode;
+  $("empty").hidden = turns.length > 0 || !state.mode;
   for (const turn of turns) {
-    addUserMessage(turn.question);
-    renderAnswer(addBotMessage(), turn);
+    addUserMessage(turn.question || TOOL_LABELS[turn.kind]);
+    const el = addBotMessage();
+    if (turn.kind === "quiz") renderQuiz(el, turn);
+    else if (turn.kind === "notes") renderNotes(el, turn);
+    else if (turn.kind === "cite") renderCite(el, turn);
+    else renderAnswer(el, turn);
   }
   scrollChat();
 }
@@ -406,7 +414,7 @@ async function ask(question) {
     turn.url = page.url;
     setStatus(el, "Searching the page…");
 
-    const history = chat.slice(-HISTORY_TURNS).map(({ question, answer }) => ({ question, answer }));
+    const history = chat.filter((t) => !t.kind).slice(-HISTORY_TURNS).map(({ question, answer }) => ({ question, answer }));
     const body = () => ({ page_id: page.page_id, question, history });
     let res;
     try {
@@ -456,6 +464,233 @@ async function ask(question) {
     renderPageInfo();
     scrollChat();
   }
+}
+
+// ---------- student tools ----------
+
+const TOOL_LABELS = { quiz: "Quiz me", notes: "Study notes", cite: "Cite this page" };
+
+// Tool results are chat turns with a `kind`; they're saved again whenever they change
+// (e.g. each quiz answer), so they're matched by id.
+async function saveTurn(turn) {
+  const chat = await loadChat(turn.chatUrl);
+  const i = chat.findIndex((t) => t.id === turn.id);
+  if (i >= 0) chat[i] = turn;
+  else chat.push(turn);
+  await saveChat(turn.chatUrl, chat);
+}
+
+// Shared by the tools that need the backend: index the page, call `path`, and retry
+// once if the backend evicted the page meanwhile. Returns the streaming response.
+async function studyRequest(path, extra) {
+  let page = await indexActivePage();
+  try {
+    return { page, res: await api(path, { page_id: page.page_id, ...extra }) };
+  } catch (e) {
+    if (e.code !== "page_not_indexed") throw e;
+    page = await indexActivePage();
+    return { page, res: await api(path, { page_id: page.page_id, ...extra }) };
+  }
+}
+
+async function runTool(kind, work) {
+  if (state.busy || !state.tab || restrictedReason(state.tab.url)) return;
+  state.busy = true;
+  renderPageInfo();
+  const chatUrl = state.tab.url;
+  addUserMessage(TOOL_LABELS[kind]);
+  const el = addBotMessage();
+  const turn = { kind, id: `${Date.now()}`, chatUrl, url: chatUrl };
+  try {
+    await work(el, turn);
+    await saveTurn(turn);
+  } catch (e) {
+    console.error(e);
+    renderError(el, e instanceof UserFacingError ? e.message : `Something went wrong: ${e.message}`);
+  } finally {
+    state.busy = false;
+    renderPageInfo();
+  }
+}
+
+function sseError(data) {
+  return new UserFacingError(
+    data.code === "llm_unavailable"
+      ? `The language model isn't available. Make sure Ollama is running (ollama serve) and the model is pulled.\n\n${data.message}`
+      : data.message
+  );
+}
+
+function runQuiz() {
+  return runTool("quiz", async (el, turn) => {
+    const chat = await loadChat(turn.chatUrl);
+    Object.assign(turn, { round: chat.filter((t) => t.kind === "quiz").length, questions: [], picks: [], done: false });
+    setStatus(el, "Reading the page…");
+    const { page, res } = await studyRequest("/study/quiz", { round: turn.round });
+    turn.url = page.url;
+    setStatus(el, "Writing question 1… (each takes a few seconds)");
+    for await (const { event, data } of readSSE(res)) {
+      if (event === "question") {
+        turn.questions.push(data);
+        renderQuiz(el, turn, { streaming: true });
+        if (turn.questions.length === 1) scrollChat();
+      } else if (event === "error") {
+        throw sseError(data);
+      }
+    }
+    if (!turn.questions.length) throw new UserFacingError("Couldn't write quiz questions for this page. Try again.");
+    turn.done = true;
+    renderQuiz(el, turn);
+  });
+}
+
+function renderQuiz(el, turn, { streaming = false } = {}) {
+  const content = el.querySelector(".content");
+  const answered = turn.picks.filter((p) => p != null).length;
+  const right = turn.questions.filter((q, i) => turn.picks[i] === q.answer).length;
+  content.innerHTML = `<div class="quiz-head"><strong>Practice quiz</strong><span class="muted small">${answered ? `${right}/${answered} correct` : ""}</span></div>`;
+  turn.questions.forEach((q, i) => {
+    const card = document.createElement("div");
+    card.className = "quiz-q";
+    const picked = turn.picks[i];
+    card.innerHTML = `<div class="q-text">${i + 1}. ${md.escape(q.question)}</div>`;
+    q.choices.forEach((c, j) => {
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.textContent = c;
+      if (picked != null) {
+        b.disabled = true;
+        if (j === q.answer) b.classList.add("correct");
+        else if (j === picked) b.classList.add("wrong");
+      }
+      b.addEventListener("click", () => {
+        turn.picks[i] = j;
+        renderQuiz(el, turn, { streaming: !turn.done && streaming });
+        if (turn.done) saveTurn(turn);
+      });
+      card.appendChild(b);
+    });
+    if (picked != null) {
+      const r = document.createElement("div");
+      r.className = "q-result";
+      r.innerHTML = (picked === q.answer ? `<b class="ok">✓ Correct.</b>` : `<b class="no">✗ Not quite.</b> The answer is “${md.escape(q.choices[q.answer])}”.`)
+        + (q.evidence ? `<p>The page says: “${md.escape(q.evidence)}”</p>` : "");
+      if (q.evidence) {
+        const show = document.createElement("button");
+        show.className = "link-btn";
+        show.textContent = "Show it on the page";
+        show.addEventListener("click", () => showSource({ text: q.evidence }, turn.url));
+        r.appendChild(show);
+      }
+      card.appendChild(r);
+    }
+    content.appendChild(card);
+  });
+  if (streaming) {
+    const s = document.createElement("div");
+    s.className = "status";
+    s.innerHTML = `<span class="spinner"></span>Writing question ${turn.questions.length + 1}…`;
+    content.appendChild(s);
+  } else if (turn.done) {
+    const actions = document.createElement("div");
+    actions.className = "tool-actions";
+    const total = turn.questions.length;
+    actions.innerHTML = `<span class="muted small">${answered === total ? `You got ${right} of ${total}.` : `${total - answered} left to answer.`}</span>`;
+    const again = document.createElement("button");
+    again.className = "small-btn";
+    again.textContent = "New quiz";
+    again.addEventListener("click", runQuiz);
+    actions.appendChild(again);
+    content.appendChild(actions);
+  }
+}
+
+function runNotes() {
+  return runTool("notes", async (el, turn) => {
+    Object.assign(turn, { notes: "", partial: false });
+    setStatus(el, "Reading the page…");
+    const { page, res } = await studyRequest("/study/notes", {});
+    turn.url = page.url;
+    setStatus(el, "Writing study notes…");
+    let frame = 0;
+    for await (const { event, data } of readSSE(res)) {
+      if (event === "meta") turn.partial = data.partial;
+      else if (event === "token") {
+        turn.notes += data.t;
+        if (!frame) frame = requestAnimationFrame(() => { frame = 0; renderNotes(el, turn, { streaming: true }); });
+      } else if (event === "error") throw sseError(data);
+    }
+    cancelAnimationFrame(frame);
+    turn.notes = turn.notes.trim();
+    if (!turn.notes) throw new UserFacingError("The model returned empty notes. Try again.");
+    renderNotes(el, turn);
+  });
+}
+
+function renderNotes(el, turn, { streaming = false } = {}) {
+  const content = el.querySelector(".content");
+  content.innerHTML = `<div class="tool-head"><strong>Study notes</strong></div>${md.render(turn.notes)}`;
+  content.classList.toggle("cursor", streaming);
+  if (streaming) return;
+  const actions = document.createElement("div");
+  actions.className = "tool-actions";
+  const copy = document.createElement("button");
+  copy.className = "small-btn";
+  copy.textContent = "Copy notes";
+  copy.addEventListener("click", () => copyText(turn.notes, md.render(turn.notes)));
+  actions.appendChild(copy);
+  if (turn.partial) actions.insertAdjacentHTML("beforeend", `<span class="muted small">Long page: these notes cover sections spread through it.</span>`);
+  content.appendChild(actions);
+}
+
+function runCite() {
+  return runTool("cite", async (el, turn) => {
+    setStatus(el, "Reading the page…");
+    const page = await extractPage(state.tab.id);
+    turn.url = page.url;
+    Object.assign(turn, window.PageSenseCite.cite(page.meta || { url: page.url, title: page.title }));
+    renderCite(el, turn);
+  });
+}
+
+function renderCite(el, turn) {
+  const content = el.querySelector(".content");
+  content.innerHTML = "";
+  for (const [label, c] of [["MLA 9", turn.mla], ["APA 7", turn.apa]]) {
+    const block = document.createElement("div");
+    block.className = "cite-block";
+    block.innerHTML = `<div class="label">${label}</div><div class="text">${c.html}</div>`;
+    const copy = document.createElement("button");
+    copy.className = "small-btn";
+    copy.textContent = "Copy";
+    copy.addEventListener("click", () => copyText(c.text, c.html));
+    const actions = document.createElement("div");
+    actions.className = "tool-actions";
+    actions.appendChild(copy);
+    block.appendChild(actions);
+    content.appendChild(block);
+  }
+  const note = document.createElement("p");
+  note.className = "muted small";
+  note.textContent = turn.missing.length
+    ? `This page doesn't list its ${turn.missing.join(" or ")}. Check the page and add ${turn.missing.length > 1 ? "them" : "it"} if you can find ${turn.missing.length > 1 ? "them" : "it"}.`
+    : "Always double-check citations against your teacher's style guide.";
+  content.appendChild(note);
+}
+
+// Copies with formatting (italics survive pasting into Docs/Word), falling back to plain text.
+async function copyText(text, html) {
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/plain": new Blob([text], { type: "text/plain" }),
+        "text/html": new Blob([html], { type: "text/html" }),
+      }),
+    ]);
+  } catch {
+    await navigator.clipboard.writeText(text);
+  }
+  toast("Copied.");
 }
 
 // ---------- smart find ----------
@@ -773,10 +1008,28 @@ function showSetup(on) {
 
 async function loadSettings() {
   try {
-    const { backend } = await chrome.storage.sync.get("backend");
+    const { backend, mode } = await chrome.storage.sync.get(["backend", "mode"]);
     state.backend = (backend || DEFAULT_BACKEND).replace(/\/+$/, "");
+    state.mode = mode || null;
   } catch {}
   $("backend-url").value = state.backend;
+  applyMode();
+}
+
+function applyMode() {
+  const student = state.mode === "student";
+  document.body.classList.toggle("student", student);
+  $("study-bar").hidden = !student;
+  $("mode-select").value = state.mode || "everyday";
+}
+
+async function setMode(mode) {
+  state.mode = mode;
+  try {
+    await chrome.storage.sync.set({ mode });
+  } catch {}
+  applyMode();
+  await renderChat();
 }
 
 // ---------- tab tracking ----------
@@ -882,6 +1135,11 @@ $("clear").addEventListener("click", async () => {
   await saveChat(state.tab.url, []);
   await renderChat();
 });
+$("quiz-btn").addEventListener("click", runQuiz);
+$("notes-btn").addEventListener("click", runNotes);
+$("cite-btn").addEventListener("click", runCite);
+$("mode-select").addEventListener("change", (e) => setMode(e.target.value));
+document.querySelectorAll(".mode-card").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 $("setup-open").addEventListener("click", () => chrome.tabs.create({ url: INSTALL_PAGE }));
 $("setup-retry").addEventListener("click", async () => {
   await checkHealth();

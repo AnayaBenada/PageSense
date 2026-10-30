@@ -24,6 +24,13 @@
   </header>
 
   <section id="settings" class="settings" hidden>
+    <label for="mode-select">Mode</label>
+    <div class="row">
+      <select id="mode-select">
+        <option value="everyday">Everyday: answers and Smart Find</option>
+        <option value="student">Student: adds Quiz me, study notes and citations</option>
+      </select>
+    </div>
     <label for="backend-url">Backend URL</label>
     <div class="row">
       <input id="backend-url" type="url" spellcheck="false" />
@@ -52,6 +59,12 @@
     <div id="page-meta" class="muted small"></div>
   </div>
 
+  <div id="study-bar" class="study-bar" hidden>
+    <button id="quiz-btn" class="chip" title="Practice questions on this page">✎ Quiz me</button>
+    <button id="notes-btn" class="chip" title="An outline of this page's key points">☰ Study notes</button>
+    <button id="cite-btn" class="chip" title="MLA and APA citations for this page">❝ Cite</button>
+  </div>
+
   <section id="find" class="find" hidden>
     <div class="find-row">
       <input id="find-query" type="search" placeholder="Find by meaning, e.g. refund policy" spellcheck="false" maxlength="2000" />
@@ -64,9 +77,16 @@
   </section>
 
   <main id="chat" class="chat" aria-live="polite">
+    <div id="welcome" class="welcome" hidden>
+      <p><strong>How will you use PageSense?</strong></p>
+      <button class="mode-card" data-mode="student"><b>🎓 Student</b><span>Ask about a page, quiz yourself on it, make study notes and cite it.</span></button>
+      <button class="mode-card" data-mode="everyday"><b>Everyday</b><span>Ask about any page and find things on it by meaning.</span></button>
+      <p class="muted small">You can switch anytime in settings (⚙).</p>
+    </div>
     <div id="empty" class="empty">
       <p><strong>Ask anything about this page.</strong></p>
       <p class="muted">Answers come only from the page's content, with clickable sources.</p>
+      <p class="muted student-only">Studying? Try <b>Quiz me</b>, <b>Study notes</b> or <b>Cite</b> above.</p>
       <div class="suggestions">
         <button class="chip suggestion">Summarize this page</button>
         <button class="chip suggestion">What are the key points?</button>
@@ -81,6 +101,7 @@
   </form>
 
   <script src="markdown.js"></script>
+  <script src="cite.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

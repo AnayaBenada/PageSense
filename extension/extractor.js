@@ -115,5 +115,44 @@
   const title = document.title || document.querySelector("h1")?.innerText || "";
   if (title && !text.startsWith("# ")) text = `# ${title.trim()}\n\n${text}`;
 
-  return { url: location.href, title: title.trim(), text };
+  return { url: location.href, title: title.trim(), text, meta: citationMeta() };
+
+  // Details for student-mode citations, from the tags publishers add for Google
+  // Scholar, social sharing and search engines.
+  function citationMeta() {
+    const metas = (sel) => [...document.querySelectorAll(sel)].map((m) => (m.getAttribute("content") || "").trim()).filter(Boolean);
+    const first = (...sels) => sels.map((s) => metas(s)[0]).find(Boolean) || "";
+    let ld = [];
+    for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
+      try {
+        const data = JSON.parse(s.textContent);
+        ld.push(...[data, ...(data["@graph"] || [])].flat());
+      } catch {}
+    }
+    ld = ld.filter((d) => d && typeof d === "object");
+    const article = ld.find((d) => /Article|BlogPosting|Report|ScholarlyArticle|WebPage/.test([].concat(d["@type"]).join(" "))) || {};
+    const ldAuthors = [].concat(article.author || []).map((a) => (typeof a === "string" ? a : a?.name)).filter(Boolean);
+    const authors = [
+      ...metas('meta[name="citation_author"]'),
+      ...metas('meta[name="dc.creator" i], meta[name="DC.creator"]'),
+      ...ldAuthors,
+      ...metas('meta[name="author"]'),
+      ...[...document.querySelectorAll('[rel="author"]')].map((a) => a.textContent.trim()).filter((t) => t && t.length < 60),
+    ];
+    // "Using the Fetch API - Web APIs | MDN": the <h1> is the real title when the page title starts with it.
+    function citationTitle() {
+      const h1 = document.querySelector("main h1, article h1, h1")?.innerText.replace(/\s+/g, " ").trim() || "";
+      const t = first('meta[name="citation_title"]') || article.headline || first('meta[property="og:title"]') || document.title;
+      return h1 && t.toLowerCase().startsWith(h1.toLowerCase()) ? h1 : t || h1;
+    }
+    return {
+      url: location.href,
+      title: citationTitle(),
+      authors,
+      published: first('meta[name="citation_publication_date"]', 'meta[name="citation_date"]', 'meta[property="article:published_time"]', 'meta[name="dc.date" i]', 'meta[name="date"]')
+        || article.datePublished || document.querySelector("article time[datetime], main time[datetime]")?.getAttribute("datetime") || "",
+      modified: first('meta[property="article:modified_time"]') || article.dateModified || "",
+      siteName: first('meta[property="og:site_name"]', 'meta[name="citation_journal_title"]', 'meta[name="application-name"]') || article.publisher?.name || "",
+    };
+  }
 })();
