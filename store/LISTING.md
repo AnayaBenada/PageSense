@@ -50,7 +50,7 @@ Open source: https://github.com/AnayaBenada/PageSense
 | Field | File |
 |---|---|
 | Store icon (128×128) | `extension/icons/icon128.png` |
-| Screenshots (1280×800, up to 5) | `screenshot-1-ask.png`, `screenshot-2-find.png`, `screenshot-3-library.png`, `screenshot-4-setup.png`. **Still to make:** one of Student mode (Quiz me, Study notes or Cite) to use as the fifth |
+| Screenshots (1280×800, up to 5) | `screenshot-5-quiz.png` (Student mode, upload first so it leads), `screenshot-1-ask.png`, `screenshot-2-find.png`, `screenshot-3-library.png`, `screenshot-4-setup.png` |
 | Small promo tile (440×280) | `promo-small.png` |
 | Marquee promo tile (1400×560, optional) | `promo-marquee.png` |
 

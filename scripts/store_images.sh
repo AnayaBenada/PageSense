@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render the Chrome Web Store images from store/art.html into store/*.png.
 # Screenshots are composed from page + panel captures in $1 (default store/raw):
-#   p1-site.png p1-panel.png (ask), p2-* (Smart Find), p3-* (library), p4-* (setup).
+#   p1-site.png p1-panel.png (ask), p2-* (Smart Find), p3-* (library), p4-* (setup), p5-* (Student mode quiz).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 RAW="$(cd "${1:-store/raw}" && pwd)"
@@ -14,8 +14,8 @@ render() { # url width height out
 }
 render "$ART?promo=small" 440 280 store/promo-small.png
 render "$ART?promo=marquee" 1400 560 store/promo-marquee.png
-names=(ask find library setup)
-for i in 1 2 3 4; do
+names=(ask find library setup quiz)
+for i in 1 2 3 4 5; do
   [ -f "$RAW/p$i-site.png" ] || continue
   render "$ART?shot=file://$RAW/p$i-site.png,file://$RAW/p$i-panel.png" 1280 800 "store/screenshot-$i-${names[$((i-1))]}.png"
 done
