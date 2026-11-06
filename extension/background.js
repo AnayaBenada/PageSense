@@ -1,4 +1,5 @@
-const INSTALL_PAGE = "https://anayabenada.github.io/PageSense/#install";
+importScripts("edition.js");
+const INSTALL_PAGE = `https://anayabenada.github.io/PageSense/${self.PAGESENSE_EDITION === "student" ? "?version=student" : ""}#install`;
 
 // Clicking the toolbar icon (or Alt+Shift+P) opens the side panel.
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {

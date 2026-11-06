@@ -1,0 +1,248 @@
+{
+  "quiz": [
+    {
+      "page": "react_useeffect",
+      "seconds": 28.1,
+      "questions": [
+        {
+          "question": "What is the purpose of the `useEffect` hook in React?",
+          "choices": [
+            "Let you connect to an external system.",
+            "Let you update state based on previous state from an effect.",
+            "Let you display different content on the server and the client.",
+            "Let you synchronize a component with an external system."
+          ],
+          "answer": 3,
+          "explanation": "The correct answer is the first choice because the passage states that `useEffect` lets you synchronize a component with an external system.",
+          "evidence": "useEffect is a React Hook that lets you synchronize a component with an external system.",
+          "heading": "useEffect \u2013 React",
+          "chunk_id": 0,
+          "key_agrees": true
+        },
+        {
+          "question": "What is the purpose of an Effect in React?",
+          "choices": [
+            "To keep a component synchronized with an external system",
+            "To update a component's state when its parent changes",
+            "To trigger a component's render when its children change",
+            "To make a component re-render when its props change"
+          ],
+          "answer": 0,
+          "explanation": "The passage states that an Effect lets you keep your component synchronized with some external system",
+          "evidence": "An Effect lets you keep your component synchronized with some external system (like a chat service).",
+          "heading": "useEffect > Usage > Note",
+          "chunk_id": 8,
+          "key_agrees": true
+        },
+        {
+          "question": "What should you do to prove to the linter that serverUrl doesn't need to be a dependency in the useEffect hook?",
+          "choices": [
+            "Move serverUrl inside the component",
+            "Add serverUrl to the dependencies",
+            "Move serverUrl out of the component",
+            "Remove serverUrl from the dependencies"
+          ],
+          "answer": 2,
+          "explanation": "You need to move serverUrl out of the component to prove it's not reactive and won't change on re-renders",
+          "evidence": "const serverUrl = 'https://localhost:1234'; // Not a reactive value anymorefunction ChatRoom({ roomId }) {  useEffect(() => {    const connection = createConnection(serverUrl, roomId);    connection.connect();    return () => connection.disconnect();  }, [roomId]); // \u2705 All dependencies declared  // ...}",
+          "heading": "useEffect > Usage > Specifying reactive dependencies",
+          "chunk_id": 18,
+          "key_agrees": false
+        },
+        {
+          "question": "What happens to the dependency array in the useEffect hook when the createOptions function is created inside the Effect itself?",
+          "choices": [
+            "The dependency array is not updated at all",
+            "The dependency array is updated every time the component re-renders",
+            "The dependency array is updated every time the createOptions function is called",
+            "The dependency array is updated only when the roomId changes"
+          ],
+          "answer": 3,
+          "explanation": "The dependency array is updated only when the roomId changes",
+          "evidence": "function ChatRoom({ roomId }) {  const [message, setMessage] = useState('');  function createOptions() { // \ud83d\udea9 This function is created from scratch on every re-render    return {      serverUrl: serverUrl,      roomId: roomId    };  }  useEffect(() => {    const options = createOptions(); // It's used inside the Effect    const connection = createConnection();    connection.connect();    return () => connection.disconnect();  }, [createOptions]); // \ud83d\udea9 As a result, these dependencies are always different on a commit  // ...",
+          "heading": "useEffect > Usage > Removing unnecessary object dependencies",
+          "chunk_id": 27,
+          "key_agrees": true
+        },
+        {
+          "question": "Why does the author suggest replacing useEffect with useLayoutEffect in certain cases?",
+          "choices": [
+            "Because it must block the browser from painting the screen",
+            "Because it runs before the browser paint",
+            "Because it's a more efficient effect",
+            "Because it's a more secure effect"
+          ],
+          "answer": 1,
+          "explanation": "Because it must run before the browser paint",
+          "evidence": "You\u2019ll only need this if it\u2019s crucial to run your Effect before the browser paint: for example, to measure and position a tooltip before the user sees it.",
+          "heading": "useEffect > Troubleshooting > My Effect does something visual, and I see a flicker before it runs",
+          "chunk_id": 38,
+          "key_agrees": true
+        }
+      ]
+    },
+    {
+      "page": "git_branching_merging",
+      "seconds": 23.6,
+      "questions": [
+        {
+          "question": "What is the first step in the branching and merging workflow described in the passage?",
+          "choices": [
+            "Switch to your production branch.",
+            "Create a branch for a new user story.",
+            "Do some work in that branch.",
+            "Do some work on a website."
+          ],
+          "answer": 1,
+          "explanation": "The passage states that the first step is to do some work on a website.",
+          "evidence": "Do some work on a website.",
+          "heading": "Git - Basic Branching and Merging",
+          "chunk_id": 0,
+          "key_agrees": false
+        },
+        {
+          "question": "What happens to your project working directory when you switch to a new branch in Git?",
+          "choices": [
+            "Git deletes all files in your working directory",
+            "Git resets your working directory to the branch's last commit",
+            "Git creates a new copy of your working directory",
+            "Git adds, removes, and modifies files to make your working copy look like the branch's last commit"
+          ],
+          "answer": 3,
+          "explanation": "The correct answer is the first one, as the passage states that Git resets your working directory to look like it did the last time you committed on that branch.",
+          "evidence": "It adds, removes, and modifies files automatically to make sure your working copy is what the branch looked like on your last commit to it.",
+          "heading": "3.2 Git Branching - Basic Branching and Merging > Basic Branching and Merging > Basic Branching",
+          "chunk_id": 3,
+          "key_agrees": true
+        },
+        {
+          "question": "What is the command to merge the `iss53` branch into the `master` branch?",
+          "choices": [
+            "git merge master",
+            "git merge iss53",
+            "git pull iss53",
+            "git checkout iss53"
+          ],
+          "answer": 1,
+          "explanation": "The correct command is to run `git merge iss53`.",
+          "evidence": "Merge made by the 'recursive' strategy.",
+          "heading": "3.2 Git Branching - Basic Branching and Merging > Basic Branching and Merging > Basic Branching",
+          "chunk_id": 6,
+          "key_agrees": false
+        },
+        {
+          "question": "What happens to files with merge conflicts that haven't been resolved?",
+          "choices": [
+            "Git adds standard conflict-resolution markers to the files",
+            "Git ignores them",
+            "Git marks them as unmerged",
+            "Git adds them to the commit"
+          ],
+          "answer": 0,
+          "explanation": "The passage states that files with merge conflicts that haven't been resolved are listed as unmerged.",
+          "evidence": "Git adds standard conflict-resolution markers to the files that have conflicts, so you can open them manually and resolve those conflicts.",
+          "heading": "3.2 Git Branching - Basic Branching and Merging > Basic Branching and Merging > Basic Merge Conflicts",
+          "chunk_id": 9,
+          "key_agrees": true
+        },
+        {
+          "question": "What happens to the commit message after you type git commit to finalize the merge commit?",
+          "choices": [
+            "It is automatically filled in with the branch name and conflict information.",
+            "It is ignored and an empty message aborts the commit.",
+            "It is displayed to you for review before being committed.",
+            "It is modified to include details about how you resolved the merge."
+          ],
+          "answer": 2,
+          "explanation": "The commit message is displayed to you for review before being committed.",
+          "evidence": "# It looks like you may be committing a merge.",
+          "heading": "3.2 Git Branching - Basic Branching and Merging > Basic Branching and Merging > Basic Merge Conflicts",
+          "chunk_id": 12,
+          "key_agrees": false
+        }
+      ]
+    },
+    {
+      "page": "mdn_using_fetch",
+      "seconds": 26.5,
+      "questions": [
+        {
+          "question": "What is the return value of the fetch() function?",
+          "choices": [
+            "A URL that is fulfilled with a Request object",
+            "A Request object that is fulfilled with a URL",
+            "A Response object that is fulfilled with a Promise",
+            "A Promise that is fulfilled with a Response object"
+          ],
+          "answer": 3,
+          "explanation": "The fetch() function returns a Promise that is fulfilled with a Response object",
+          "evidence": "The fetch() function returns a Promise which is fulfilled with a Response object representing the server's response.",
+          "heading": "Using the Fetch API",
+          "chunk_id": 0,
+          "key_agrees": true
+        },
+        {
+          "question": "What happens to header names when using a Headers object?",
+          "choices": [
+            "They are normalized to uppercase",
+            "They are not normalized",
+            "They are normalized to lowercase",
+            "They are not changed"
+          ],
+          "answer": 2,
+          "explanation": "The passage states that the Headers object normalizes header names to lowercase.",
+          "evidence": "For example, it normalizes header names to lowercase, strips leading and trailing whitespace from header values, and prevents certain headers from being set.",
+          "heading": "Using the Fetch API > Making a request > Setting headers",
+          "chunk_id": 5,
+          "key_agrees": true
+        },
+        {
+          "question": "What can you do with a Request object created with the Request() constructor?",
+          "choices": [
+            "Pass the object to fetch() with options and change some properties",
+            "Pass the object to fetch() with options",
+            "Pass the object to fetch() directly",
+            "Pass the object to fetch() with options and create a new request from it"
+          ],
+          "answer": 3,
+          "explanation": "You can create a request from another request, while changing some of its properties",
+          "evidence": "This also means that you can create a request from another request, while changing some of its properties using the second argument:",
+          "heading": "Using the Fetch API > Making a request > Creating a Request object",
+          "chunk_id": 10,
+          "key_agrees": false
+        },
+        {
+          "question": "What happens if you call the Response.json() method on a response that can't be parsed as JSON?",
+          "choices": [
+            "The method returns a Promise that will be fulfilled with the response status.",
+            "The method returns a Promise that will be rejected with an error.",
+            "The method returns a Promise that will be fulfilled with the response body.",
+            "The method throws a TypeError."
+          ],
+          "answer": 3,
+          "explanation": "The method throws a TypeError.",
+          "evidence": "The method will throw an exception if the response body is not in the appropriate format: for example, if you call json() on a response that can't be parsed as JSON.",
+          "heading": "Using the Fetch API > Handling the response > Reading the response body",
+          "chunk_id": 17,
+          "key_agrees": false
+        },
+        {
+          "question": "Why must you call Response.clone() before reading the body of a response more than once?",
+          "choices": [
+            "Because the response is not yet fully received.",
+            "Because the response is locked and disturbed by another thread.",
+            "Because the response is not yet fully processed.",
+            "Because you need to read the body twice."
+          ],
+          "answer": 1,
+          "explanation": "Because the response is locked and disturbed by another thread.",
+          "evidence": "If you do need to read the body more than once, you must call Response.clone() before reading the body:",
+          "heading": "Using the Fetch API > Handling the response > Locked and disturbed streams",
+          "chunk_id": 23,
+          "key_agrees": false
+        }
+      ]
+    }
+  ],
+  "notes": []
+}

@@ -9,10 +9,8 @@ right choices) are dropped. The key sentence is what the panel highlights after 
 import json
 import random
 import re
-from dataclasses import dataclass
 
 from .chunker import Chunk
-from .embedder import Reranker
 from .find import page_pieces
 from .index_store import IndexStore, PageIndex
 
@@ -56,14 +54,16 @@ MIN_QUIZ_CHUNK_TOKENS = 60
 _FENCE = re.compile(r"```.*?(```|$)", re.DOTALL)
 
 
-@dataclass
-class QuizQuestion:
-    question: str
-    choices: list[str]
-    answer: int
-    evidence: str  # exact page sentence that supports the answer, for highlighting
-    heading: str
-    chunk_id: int
+_BACK_MATTER = re.compile(
+    r"^(references|bibliography|notes|footnotes|citations|sources|works cited|further reading|external links|see also)$",
+    re.IGNORECASE,
+)
+
+
+def content_chunks(page: PageIndex) -> list[Chunk]:
+    """The page minus reference lists and link sections, which can be a third of a Wikipedia article."""
+    body = [c for c in page.chunks if not _BACK_MATTER.match(c.heading.rsplit(">", 1)[-1].strip())]
+    return body or list(page.chunks)
 
 
 def _prose_tokens(chunk: Chunk) -> float:
@@ -75,7 +75,8 @@ def _prose_tokens(chunk: Chunk) -> float:
 def quiz_chunks(page: PageIndex, n: int, round_: int = 0) -> list[Chunk]:
     """n prose-heavy chunks spread through the page; later rounds pick different ones.
     Callers ask for a couple extra, since some questions fail the check."""
-    eligible = [c for c in page.chunks if _prose_tokens(c) >= MIN_QUIZ_CHUNK_TOKENS] or list(page.chunks)
+    body = content_chunks(page)
+    eligible = [c for c in body if _prose_tokens(c) >= MIN_QUIZ_CHUNK_TOKENS] or body
     if len(eligible) <= n:
         return eligible
     if round_ == 0:
@@ -195,7 +196,7 @@ def shuffle_choices(q: dict, seed: str) -> dict:
 
 def notes_chunks(page: PageIndex, budget: int = NOTES_BUDGET_TOKENS) -> list[Chunk]:
     """The whole page if it fits; otherwise chunks spread evenly through it."""
-    chunks = page.chunks
+    chunks = content_chunks(page)
     if sum(c.n_tokens for c in chunks) <= budget:
         return list(chunks)
     avg = sum(c.n_tokens for c in chunks) / len(chunks)

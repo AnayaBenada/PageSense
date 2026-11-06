@@ -3,12 +3,14 @@
 Everything the Chrome Web Store developer dashboard asks for, ready to paste.
 Build the upload with `scripts/package_extension.sh` (→ `dist/pagesense-<version>.zip`).
 
+One listing covers both modes. The first time someone opens the panel it asks whether they want **Student** mode (quizzes, study notes, citations) or **Everyday** mode, and they can switch any time in settings (⚙).
+
 ## Store listing tab
 
 **Name:** PageSense (from the manifest)
 
-**Summary** (from the manifest, 112/132 characters):
-> Ask questions about the page you're reading and find passages by meaning. Private: the AI runs on your computer.
+**Summary** (from the manifest, 129/132 characters):
+> Ask any page questions, find passages by meaning, and study it with quizzes, notes and citations. Private: runs on your computer.
 
 **Description:**
 
@@ -23,8 +25,14 @@ FEATURES
 • Reading library: save pages with ☆, then search everything you've saved by meaning and reopen any page at the passage you need.
 • Keyboard shortcuts: Alt+Shift+P opens PageSense, Alt+Shift+F opens Smart Find.
 
+STUDENT MODE
+Pick Student mode the first time you open PageSense (or switch any time in settings) to get a study bar with three tools:
+• Quiz me: multiple-choice practice questions about the page. After each answer you see the sentence on the page that has the answer, and one click highlights it. "New quiz" makes a fresh set.
+• Study notes: an outline of the page's key points, grouped by section, with a list of key terms. Copy them into Google Docs, Notion or Word in one click.
+• Cite: MLA 9 and APA 7 citations built from the page's author and date. Paste them with the italics intact. If the page doesn't list an author or date, it tells you so you can check.
+
 PRIVATE BY DESIGN
-The AI runs on your own computer (Meta's LLaMA 3.2 via Ollama, plus small search models). Pages, questions and your library never leave your machine. No account, no analytics, no ads.
+The AI runs on your own computer (Meta's LLaMA 3.2 via Ollama, plus small search models). Pages, questions, quizzes, notes and your library never leave your machine. No account, no analytics, no ads.
 
 ONE-TIME SETUP
 Because the AI runs locally, PageSense needs a free helper app on your Mac or Linux computer. After you add the extension, it shows you how: paste one command into Terminal and wait about 10 minutes for the download. Needs about 4 GB of free space and 8 GB of memory; Apple Silicon Macs recommended.
@@ -33,7 +41,7 @@ Setup guide: https://anayabenada.github.io/PageSense/
 Open source: https://github.com/AnayaBenada/PageSense
 ```
 
-**Category:** Tools (alternative: Workflow & Planning)
+**Category:** Tools (alternative: Education, if students are your main audience)
 
 **Language:** English
 
@@ -42,7 +50,7 @@ Open source: https://github.com/AnayaBenada/PageSense
 | Field | File |
 |---|---|
 | Store icon (128×128) | `extension/icons/icon128.png` |
-| Screenshots (1280×800) | `screenshot-1-ask.png`, `screenshot-2-find.png`, `screenshot-3-library.png`, `screenshot-4-setup.png` |
+| Screenshots (1280×800, up to 5) | `screenshot-1-ask.png`, `screenshot-2-find.png`, `screenshot-3-library.png`, `screenshot-4-setup.png`. **Still to make:** one of Student mode (Quiz me, Study notes or Cite) to use as the fifth |
 | Small promo tile (440×280) | `promo-small.png` |
 | Marquee promo tile (1400×560, optional) | `promo-marquee.png` |
 
@@ -52,7 +60,7 @@ Open source: https://github.com/AnayaBenada/PageSense
 ## Privacy practices tab
 
 **Single purpose:**
-> PageSense helps people understand the web page they're reading: it answers questions about the page, finds passages by meaning, and lets them save and search pages they've read.
+> PageSense helps people understand and study the web page they're reading: it answers questions about the page, finds passages by meaning, writes practice quizzes, study notes and citations for it, and lets them save and search pages they've read.
 
 **Permission justifications:**
 
@@ -60,7 +68,7 @@ Open source: https://github.com/AnayaBenada/PageSense
 |---|---|
 | `sidePanel` | PageSense's whole interface is a side panel shown next to the page the user is reading. |
 | `scripting` | When the user asks a question, uses Smart Find, or saves a page, PageSense injects a script into the current tab to read its text, and another to highlight the passage an answer came from. |
-| `storage` | Keeps the chat for each page (session storage, cleared when Chrome closes) and the address of the local helper app (sync storage). |
+| `storage` | Keeps the chat, quizzes and notes for each page (session storage, cleared when Chrome closes), and the user's settings: the address of the local helper app and which mode they use (sync storage). |
 | Host permission `<all_urls>` | Users can ask about any page they're reading, so PageSense must be able to read and highlight text on any site when they use it. It is also needed to reach the helper app running on the user's own computer (http://localhost:8000). Page text is only read when the user uses a feature, and is only sent to that local app. |
 
 **Remote code:** No, I am not using remote code. (All JavaScript is in the package; the extension only exchanges JSON with the local helper app.)
@@ -89,6 +97,7 @@ To test the full functionality on macOS or Linux:
 2. Open any article, e.g. https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 3. Click the PageSense icon and ask "How do I cancel a request?"
 4. Press Alt+Shift+F and search "send JSON in the body" to try Smart Find.
+5. To try Student mode, open settings (⚙), set Mode to Student, open e.g. https://en.wikipedia.org/wiki/Photosynthesis, and use "Quiz me", "Study notes" and "Cite" in the study bar.
 Remove it afterwards with ~/PageSense/uninstall.sh --all
 
 Source code: https://github.com/AnayaBenada/PageSense

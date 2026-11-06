@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "PageSense",
   "version": "1.0.0",
-  "description": "Ask questions about the page you're reading and find passages by meaning. Private: the AI runs on your computer.",
+  "description": "Ask any page questions, find passages by meaning, and study it with quizzes, notes and citations. Private: runs on your computer.",
   "homepage_url": "https://anayabenada.github.io/PageSense/",
   "minimum_chrome_version": "116",
   "permissions": [

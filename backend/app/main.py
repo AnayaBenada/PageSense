@@ -32,6 +32,7 @@ from .llm import LLMError, OllamaClient
 from .study import (
     check_choice_messages,
     check_open_messages,
+    content_chunks,
     key_sentence,
     matched_choice,
     notes_chunks,
@@ -186,6 +187,7 @@ def create_app(
             "ollama": llm_status,
             "cached_pages": len(request.app.state.store),
             "library_pages": len(request.app.state.library),
+            "default_mode": cfg.default_mode if cfg.default_mode in ("student", "everyday") else None,
         }
 
     @app.post("/index", response_model=IndexResponse)
@@ -325,7 +327,7 @@ def create_app(
 
         async def events():
             start = time.perf_counter()
-            yield sse("meta", {"page_id": page.page_id, "partial": len(chunks) < len(page.chunks)})
+            yield sse("meta", {"page_id": page.page_id, "partial": len(chunks) < len(content_chunks(page))})
             try:
                 async for tok in llm.stream(notes_messages(page, chunks)):
                     if await request.is_disconnected():

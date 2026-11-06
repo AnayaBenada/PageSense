@@ -535,7 +535,8 @@ function runQuiz() {
         renderQuiz(el, turn, { streaming: true });
         if (turn.questions.length === 1) scrollChat();
       } else if (event === "error") {
-        throw sseError(data);
+        if (!turn.questions.length) throw sseError(data);
+        break; // keep the questions already written
       }
     }
     if (!turn.questions.length) throw new UserFacingError("Couldn't write quiz questions for this page. Try again.");
@@ -975,6 +976,7 @@ async function checkHealth() {
   try {
     const h = await (await api("/health")).json();
     showSetup(false);
+    if (!state.mode && h.default_mode) setMode(h.default_mode); // the version picked on the install website
     if (h.status === "ok") {
       dot.className = "dot ok";
       dot.title = `Ready · ${h.llm_model}`;
@@ -1010,7 +1012,7 @@ async function loadSettings() {
   try {
     const { backend, mode } = await chrome.storage.sync.get(["backend", "mode"]);
     state.backend = (backend || DEFAULT_BACKEND).replace(/\/+$/, "");
-    state.mode = mode || null;
+    state.mode = mode || self.PAGESENSE_EDITION || null;
   } catch {}
   $("backend-url").value = state.backend;
   applyMode();

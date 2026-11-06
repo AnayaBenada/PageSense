@@ -107,3 +107,12 @@ def test_quiz_chunks_skip_code_listings(client):
     code_only = [ch for ch in page.chunks if _prose_tokens(ch) < MIN_QUIZ_CHUNK_TOKENS]
     assert code_only  # the page really has chunks to skip
     assert all(_prose_tokens(ch) >= MIN_QUIZ_CHUNK_TOKENS for ch in quiz_chunks(page, 3))
+
+
+def test_reference_lists_are_left_out(client):
+    body = "\n\n".join(f"## Part {i}\n\n" + " ".join(f"idea{i}x{j}" for j in range(150)) for i in range(6))
+    refs = "\n\n## References\n\n" + "\n".join(f"- Author{i}, A. (2020). Title {i}. doi:10.1/{i}" for i in range(300))
+    page = client.app.state.store.add("https://x.test/refs", "Refs", "# Article\n\n" + body + refs)[0]
+    assert any(ch.heading.endswith("References") for ch in page.chunks)
+    for picked in (quiz_chunks(page, 20), notes_chunks(page, budget=100_000)):
+        assert picked and not any(ch.heading.endswith("References") for ch in picked)
