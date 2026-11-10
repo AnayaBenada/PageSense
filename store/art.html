@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- Source for the store images. Render with scripts/store_images.sh:
+     art.html?promo=small (440x280), ?promo=marquee (1400x560),
+     ?shot=<site.png>,<panel.png> (1280x800 screenshot: page + side panel). -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; }
+
+  .promo { width: 440px; height: 280px; display: flex; flex-direction: column; justify-content: center; padding: 0 36px;
+           color: #fff; background: radial-gradient(120% 140% at 0% 0%, #6366f1 0%, #4338ca 55%, #312e81 100%); }
+  .promo .logo { display: flex; align-items: center; gap: 12px; font-size: 30px; font-weight: 750; letter-spacing: -0.01em; }
+  .promo img { width: 52px; height: 52px; border-radius: 12px; background: #fff; padding: 4px; }
+  .promo p { margin-top: 16px; font-size: 21px; line-height: 1.3; font-weight: 600; }
+  .promo small { display: block; margin-top: 10px; font-size: 14px; opacity: .8; font-weight: 500; }
+  .marquee { width: 1400px; height: 560px; padding: 0 110px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .marquee .text { max-width: 640px; }
+  .marquee .logo { font-size: 48px; gap: 18px; }
+  .marquee img { width: 84px; height: 84px; border-radius: 18px; padding: 6px; }
+  .marquee p { font-size: 40px; margin-top: 26px; }
+  .marquee small { font-size: 22px; margin-top: 16px; }
+  .mock { width: 440px; background: #fff; color: #1d1d1f; border-radius: 16px; padding: 20px; font-size: 18px; line-height: 1.45;
+          box-shadow: 0 30px 80px rgba(0,0,0,.35); display: grid; gap: 14px; }
+  .mock .q { justify-self: end; background: #4f46e5; color: #fff; padding: 10px 14px; border-radius: 14px; }
+  .mock .a { background: #eef0ff; padding: 12px 14px; border-radius: 14px; }
+  .mock .a b { color: #4f46e5; font-size: 14px; }
+  .mock mark { background: #fde047; padding: 1px 3px; border-radius: 3px; }
+
+  .shot { width: 1280px; height: 800px; display: flex; background: #fff; }
+  .shot .site { width: 859px; height: 800px; object-fit: cover; object-position: top left; }
+  .shot .divider { width: 1px; background: #dadce0; }
+  .shot .panel { width: 420px; height: 800px; object-fit: cover; object-position: top left; }
+</style>
+</head>
+<body>
+<script>
+  const q = new URLSearchParams(location.search);
+  const icon = "../extension/icons/icon128.png";
+  if (q.get("promo") === "small") {
+    document.body.innerHTML = `<div class="promo"><div class="logo"><img src="${icon}">PageSense</div>
+      <p>Ask any web page a question.</p><small>Answers from the page · Private, runs on your computer</small></div>`;
+  } else if (q.get("promo") === "marquee") {
+    document.body.innerHTML = `<div class="promo marquee"><div class="text"><div class="logo"><img src="${icon}">PageSense</div>
+      <p>Ask any web page a question.</p><small>Answers come from the page, with the passage highlighted. The AI runs privately on your own computer.</small></div>
+      <div class="mock"><div class="q">Can I get a refund after 2 weeks?</div>
+      <div class="a">Yes. You can return any item within 30 days for a full refund. <b>[1]</b></div>
+      <div><mark>You can return any item within 30 days for a full refund.</mark></div></div></div>`;
+  } else if (q.get("shot")) {
+    const [site, panel] = q.get("shot").split(",");
+    document.body.innerHTML = `<div class="shot"><img class="site" src="${site}"><div class="divider"></div><img class="panel" src="${panel}"></div>`;
+  }
+</script>
+</body>
+</html>

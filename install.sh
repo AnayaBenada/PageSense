@@ -14,6 +14,7 @@
 #   PAGESENSE_BRANCH=main          which branch to download
 #   PAGESENSE_PORT=8000            backend port
 #   PAGESENSE_LLM_MODEL=llama3.2   Ollama model (llama3.2:1b for machines with <8 GB RAM)
+#   PAGESENSE_MODE=student         open the panel in student or everyday mode (default: ask on first open)
 #   PAGESENSE_NO_SERVICE=1         don't install the background service
 set -euo pipefail
 
@@ -21,6 +22,7 @@ REPO="AnayaBenada/PageSense"
 BRANCH="${PAGESENSE_BRANCH:-main}"
 PORT="${PAGESENSE_PORT:-8000}"
 MODEL="${PAGESENSE_LLM_MODEL:-llama3.2}"
+MODE="${PAGESENSE_MODE:-}"
 DATA="$HOME/.pagesense"
 LABEL="com.pagesense.backend"
 
@@ -29,6 +31,7 @@ fail() { printf '\n\033[31mError:\033[0m %s\n' "$*" >&2; exit 1; }
 
 OS="$(uname -s)"
 [ "$OS" = Darwin ] || [ "$OS" = Linux ] || fail "PageSense supports macOS and Linux (on Windows, use WSL)."
+case "$MODE" in ""|student|everyday) ;; *) fail "PAGESENSE_MODE must be student or everyday, not \"$MODE\"." ;; esac
 
 # ---------- 1. Code ----------
 here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || true)"
@@ -196,6 +199,7 @@ else
   <key>EnvironmentVariables</key>
   <dict>
     <key>PAGESENSE_LLM_MODEL</key><string>$MODEL</string>
+    <key>PAGESENSE_DEFAULT_MODE</key><string>$MODE</string>
     <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
   </dict>
   <key>RunAtLoad</key><true/>
@@ -218,6 +222,7 @@ After=network.target
 [Service]
 WorkingDirectory=$BACKEND
 Environment=PAGESENSE_LLM_MODEL=$MODEL
+Environment=PAGESENSE_DEFAULT_MODE=$MODE
 ExecStart=$UVICORN app.main:app --host 127.0.0.1 --port $PORT
 Restart=on-failure
 StandardOutput=append:$DATA/logs/backend.log
@@ -256,6 +261,7 @@ EOF
 if [ "$PORT" != 8000 ]; then
   echo "  5. In the panel's settings (⚙), set the backend URL to http://localhost:$PORT"
 fi
+[ -n "$MODE" ] && echo "  PageSense will open in $MODE mode. You can switch any time in the panel's settings (⚙)."
 [ "$OS" = Darwin ] && open "$ROOT/extension" 2>/dev/null || true
 echo
 echo "To uninstall: $ROOT/uninstall.sh"

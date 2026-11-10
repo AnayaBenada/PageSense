@@ -76,6 +76,24 @@ class FindResponse(BaseModel):
     find_ms: float
 
 
+class PageRef(BaseModel):
+    page_id: str | None = None
+    # Alternative to page_id: send the page and index it inline.
+    url: str | None = None
+    title: str = ""
+    text: str | None = None
+
+
+class QuizRequest(PageRef):
+    n: int | None = Field(None, ge=1, le=10)
+    # 0 = questions spread evenly through the page; 1, 2, … = a different set each time.
+    round: int = Field(0, ge=0)
+
+
+class NotesRequest(PageRef):
+    pass
+
+
 class SaveRequest(BaseModel):
     page_id: str
 

@@ -1,6 +1,10 @@
 import json
 
-from tests.conftest import FakeLLM
+from fastapi.testclient import TestClient
+
+from app.config import Settings
+from app.main import create_app
+from tests.conftest import FakeEmbedder, FakeLLM
 
 PAGE = {
     "url": "https://example.com/docs",
@@ -18,6 +22,14 @@ def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200
     assert r.json()["status"] == "ok"
+    assert r.json()["default_mode"] is None  # the panel asks which mode
+
+
+def test_health_reports_the_install_mode(fake_llm, tmp_path):
+    for value, expected in (("student", "student"), ("everyday", "everyday"), ("bogus", None)):
+        cfg = Settings(library_path=str(tmp_path / "l.db"), default_mode=value)
+        with TestClient(create_app(cfg, embedder=FakeEmbedder(), llm=fake_llm)) as c:
+            assert c.get("/health").json()["default_mode"] == expected
 
 
 def test_index_and_cache(client):

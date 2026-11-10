@@ -39,6 +39,8 @@ It downloads PageSense to `~/PageSense`, installs [Ollama](https://ollama.com) a
 2. Click **Load unpacked** and select `~/PageSense/extension`.
 3. Pin PageSense, open any article, and press **Alt+Shift+P**.
 
+PageSense is one Chrome Web Store listing with both modes: the panel asks on first open whether to use Student or Everyday mode. [store/LISTING.md](store/LISTING.md) has the listing text, permission justifications and images; `scripts/package_extension.sh` builds the zip. Privacy policy: [docs/privacy.html](https://anayabenada.github.io/PageSense/privacy.html).
+
 Run the same command again to update. `~/PageSense/uninstall.sh` stops the background service (`--all` also deletes your saved library). Options such as a smaller model for low-RAM machines (`PAGESENSE_LLM_MODEL=llama3.2:1b`) or a different port are listed at the top of [install.sh](install.sh). Backend logs are in `~/.pagesense/logs/backend.log`.
 
 ## Manual setup (for development)
@@ -79,6 +81,7 @@ Backend settings are environment variables (see `backend/app/config.py`):
 | Variable | Default | |
 |---|---|---|
 | `PAGESENSE_LLM_MODEL` | `llama3.2` | Any Ollama model, e.g. `llama3.2:1b` for low-RAM machines |
+| `PAGESENSE_DEFAULT_MODE` | (none) | `student` or `everyday`: the mode the panel starts in until someone picks one (set by `PAGESENSE_MODE` in the installer) |
 | `PAGESENSE_EMBED_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | |
 | `PAGESENSE_RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-12-v2` | Set to empty to disable reranking |
 | `PAGESENSE_CHUNK_TOKENS` / `_CHUNK_OVERLAP` | `300` / `50` | |

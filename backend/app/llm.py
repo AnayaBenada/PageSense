@@ -31,9 +31,18 @@ class OllamaClient:
     async def chat(self, messages: list[dict]) -> str:
         return "".join([tok async for tok in self.stream(messages)])
 
-    async def stream(self, messages: list[dict]) -> AsyncIterator[str]:
+    async def chat_json(self, messages: list[dict], temperature: float | None = None) -> str:
+        """A reply constrained to valid JSON (Ollama's format="json")."""
+        return "".join([tok async for tok in self.stream(messages, json_mode=True, temperature=temperature)])
+
+    async def stream(
+        self, messages: list[dict], json_mode: bool = False, temperature: float | None = None
+    ) -> AsyncIterator[str]:
+        options = self.options if temperature is None else {**self.options, "temperature": temperature}
         # keep_alive: avoid reloading the model between questions.
-        payload = {"model": self.model, "messages": messages, "stream": True, "options": self.options, "keep_alive": "30m"}
+        payload = {"model": self.model, "messages": messages, "stream": True, "options": options, "keep_alive": "30m"}
+        if json_mode:
+            payload["format"] = "json"
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 async with client.stream("POST", f"{self.base_url}/api/chat", json=payload) as r:
