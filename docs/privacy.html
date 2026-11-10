@@ -30,21 +30,21 @@
   <header><a href="./"><img src="icon128.png" alt="">PageSense</a></header>
 
   <h1>Privacy Policy</h1>
-  <p class="date">Effective October 26, 2026</p>
+  <p class="date">Effective November 9, 2026</p>
 
   <p class="summary"><b>In short:</b> PageSense works entirely on your own computer. The pages you read, the questions you ask and the pages you save are never sent to us or to anyone else. There are no accounts, no analytics and no ads.</p>
 
   <h2>What PageSense reads</h2>
-  <p>When you open the PageSense side panel and ask a question, use Smart Find, or save a page, the extension reads the text of the web page in your current tab. It does this only when you use one of these features, and only for that tab.</p>
+  <p>When you open the PageSense side panel and ask a question, use Smart Find, save a page, or use a Student mode tool (Quiz me, Study notes or Cite), the extension reads the text of the web page in your current tab. Cite also reads the page's title, author, publisher and date from the page's own tags. It does this only when you use one of these features, and only for that tab.</p>
 
   <h2>Where that data goes</h2>
-  <p>The page text and your question are sent to the PageSense helper app running on your own computer (at <code>http://localhost:8000</code> by default). That app runs the AI models locally and sends the answer back to the extension. Nothing is sent to the PageSense developers or to any other server.</p>
+  <p>The page text and your question are sent to the PageSense helper app running on your own computer (at <code>http://localhost:8000</code> by default). That app runs the AI models locally and sends the answer, quiz or study notes back to the extension. Citations are built inside the extension itself. Nothing is sent to the PageSense developers or to any other server.</p>
 
   <h2>What is stored, and where</h2>
   <ul>
-    <li><b>Your chat with each page</b> is kept in Chrome's session storage on your computer and is erased when you close Chrome.</li>
+    <li><b>Your chat with each page</b>, including any quizzes and study notes, is kept in Chrome's session storage on your computer and is erased when you close Chrome.</li>
     <li><b>Pages you save</b> to your library are stored in a file on your computer (<code>~/.pagesense/library.db</code>) until you remove them in the panel or delete the file.</li>
-    <li><b>The helper app's address</b> (a setting) is saved with Chrome's sync storage, so Chrome may sync it to your other computers if you're signed in to Chrome. No page content is stored there.</li>
+    <li><b>Your settings</b>, the helper app's address and whether you chose Student or Everyday mode, are saved with Chrome's sync storage, so Chrome may sync them to your other computers if you're signed in to Chrome. No page content is stored there.</li>
     <li>A short-term cache of recently read pages is kept in the helper app's memory and is cleared when it stops.</li>
   </ul>
 
@@ -62,7 +62,7 @@
   <ul>
     <li><b>Read and change data on websites</b>: to read the text of the page you ask about, highlight passages on it, and talk to the helper app on your computer.</li>
     <li><b>Side panel</b>: to show PageSense beside the page.</li>
-    <li><b>Storage</b>: to keep your chat and settings as described above.</li>
+    <li><b>Storage</b>: to keep your chat, quizzes, study notes and settings as described above.</li>
     <li><b>Scripting</b>: to read the page's text and highlight passages when you ask.</li>
   </ul>
 
