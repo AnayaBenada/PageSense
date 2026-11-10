@@ -15,27 +15,34 @@ One listing covers both modes. The first time someone opens the panel it asks wh
 **Description:**
 
 ```
-Ask any web page a question, and get the answer from the page itself.
+Ask any web page a question and get the answer from the page itself, without your reading ever leaving your computer.
 
-PageSense opens beside the page you're reading. Ask in plain words ("Can I get a refund after two weeks?", "How do I install this?") and it answers from the page, citing the exact passages it used. Click a citation to jump to it on the page, highlighted.
+PageSense opens in a side panel next to whatever you're reading. Ask in plain words, like "Can I get a refund after two weeks?" or "How do I install this?" It answers using only that page and shows the passages it used. Click a citation to jump straight to the highlighted text.
 
-FEATURES
-• Answers from the page: every answer cites its sources, so you can check it.
-• Smart Find: like Ctrl+F, but by meaning. Search "how do I cancel" and it highlights "end your plan". Press Alt+Shift+F.
-• Reading library: save pages with ☆, then search everything you've saved by meaning and reopen any page at the passage you need.
-• Keyboard shortcuts: Alt+Shift+P opens PageSense, Alt+Shift+F opens Smart Find.
+ASK AND FIND
+• Ask any page: get streamed answers with clickable citations, and ask follow-up questions. If the answer isn't on the page, PageSense says so instead of guessing.
+• Smart Find: like Ctrl+F, but it searches by meaning. Type what you're looking for and PageSense highlights the matching sentences. Press Alt+Shift+F to open it.
+• Reading library: save pages with ☆, search everything you've saved by meaning, and reopen any page at the passage you need.
 
 STUDENT MODE
-Pick Student mode the first time you open PageSense (or switch any time in settings) to get a study bar with three tools:
-• Quiz me: multiple-choice practice questions about the page. After each answer you see the sentence on the page that has the answer, and one click highlights it. "New quiz" makes a fresh set.
-• Study notes: an outline of the page's key points, grouped by section, with a list of key terms. Copy them into Google Docs, Notion or Word in one click.
-• Cite: MLA 9 and APA 7 citations built from the page's author and date. Paste them with the italics intact. If the page doesn't list an author or date, it tells you so you can check.
+Choose Student mode when you first open PageSense, or switch any time in settings.
+• Quiz me: multiple-choice questions on the page. After each answer, see the sentence that proves it, and highlight it in one click.
+• Study notes: an outline of the key points by section, plus key terms, ready to copy into Google Docs, Notion or Word.
+• Cite: MLA 9 and APA 7 citations built from the page's author and date. If either is missing, PageSense tells you so you can check.
 
 PRIVATE BY DESIGN
-The AI runs on your own computer (Meta's LLaMA 3.2 via Ollama, plus small search models). Pages, questions, quizzes, notes and your library never leave your machine. No account, no analytics, no ads.
+The AI runs on your own computer, using Meta's LLaMA 3.2 through Ollama. Your pages, questions, quizzes, notes and library never leave your machine. No account, no analytics, no ads.
 
 ONE-TIME SETUP
-Because the AI runs locally, PageSense needs a free helper app on your Mac or Linux computer. After you add the extension, it shows you how: paste one command into Terminal and wait about 10 minutes for the download. Needs about 4 GB of free space and 8 GB of memory; Apple Silicon Macs recommended.
+Because the AI runs locally, PageSense needs a free helper app. After you add the extension, it walks you through setup: paste one command into Terminal and wait about 10 minutes for the download.
+
+Requirements: Mac or Linux (Windows isn't supported yet), about 4 GB of free space and 8 GB of memory. Apple Silicon Macs are recommended.
+
+GOOD TO KNOW
+• The AI model is small enough to run on a laptop, so it can occasionally skip a citation or get a detail wrong. Check anything important against the highlighted source.
+• Chrome doesn't let extensions read chrome:// pages, the Chrome Web Store or its built-in PDF viewer.
+
+Shortcuts: Alt+Shift+P opens PageSense. Alt+Shift+F opens Smart Find.
 
 Setup guide: https://anayabenada.github.io/PageSense/
 Open source: https://github.com/AnayaBenada/PageSense
